@@ -108,13 +108,63 @@ function product_price(array $p): float
         : (float)$p['price'];
 }
 
-function product_image(array $p): string
+/** $size 'thumb' = small (~400px) version for product cards, 'full' = page image */
+function product_image(array $p, string $size = 'full'): string
 {
     if (!$p['image']) {
         return url('assets/img/placeholder.svg');
     }
     // Built-in images live in assets/, admin uploads in uploads/
-    return str_starts_with($p['image'], 'assets/') ? url($p['image']) : url('uploads/' . $p['image']);
+    $rel = str_starts_with($p['image'], 'assets/') ? $p['image'] : 'uploads/' . $p['image'];
+    if ($size === 'thumb') {
+        $thumbRel = preg_replace('/\.[a-z]+$/i', '', $rel) . '-t.' . (function_exists('imagewebp') ? 'webp' : 'jpg');
+        $thumbRel = preg_replace('#^(assets/img|uploads)/#', 'uploads/thumbs/', $thumbRel);
+        if (is_file(PUBLIC_DIR . '/' . $thumbRel) || make_image(PUBLIC_DIR . '/' . $rel, PUBLIC_DIR . '/' . $thumbRel, 420)) {
+            return url($thumbRel);
+        }
+    }
+    return url($rel);
+}
+
+/**
+ * Resize an image to fit $max px (keeps aspect) and save it. Output type follows the target extension.
+ * Returns false when GD can't read it (the original is then used as-is).
+ */
+function make_image(string $src, string $dst, int $max, int $quality = 80): bool
+{
+    if (!function_exists('imagecreatetruecolor') || !is_file($src)) {
+        return false;
+    }
+    $info = @getimagesize($src);
+    if (!$info) {
+        return false;
+    }
+    [$w, $h, $type] = $info;
+    $img = match ($type) {
+        IMAGETYPE_JPEG => @imagecreatefromjpeg($src),
+        IMAGETYPE_PNG  => @imagecreatefrompng($src),
+        IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($src) : false,
+        IMAGETYPE_GIF  => @imagecreatefromgif($src),
+        default        => false,
+    };
+    if (!$img) {
+        return false;
+    }
+    $scale = min(1, $max / max($w, $h));
+    $nw = max(1, (int)round($w * $scale));
+    $nh = max(1, (int)round($h * $scale));
+    $out = imagecreatetruecolor($nw, $nh);
+    imagefill($out, 0, 0, imagecolorallocate($out, 255, 255, 255)); // flatten transparency on white
+    imagecopyresampled($out, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
+    if (!is_dir(dirname($dst))) {
+        @mkdir(dirname($dst), 0755, true);
+    }
+    $ok = str_ends_with($dst, '.webp') && function_exists('imagewebp')
+        ? imagewebp($out, $dst, $quality)
+        : imagejpeg($out, $dst, $quality + 2);
+    imagedestroy($img);
+    imagedestroy($out);
+    return (bool)$ok;
 }
 
 function status_label(string $status): string
@@ -152,11 +202,18 @@ function save_image_upload(array $f): string
     if (!$ext) {
         throw new RuntimeException('ছবি অবশ্যই JPG, PNG, WEBP বা GIF হতে হবে।');
     }
-    if ($f['size'] > 5 * 1024 * 1024) {
-        throw new RuntimeException('ছবি ৫MB এর বেশি হতে পারবে না।');
+    if ($f['size'] > 15 * 1024 * 1024) {
+        throw new RuntimeException('ছবি ১৫MB এর বেশি হতে পারবে না।');
     }
     $dir = PUBLIC_DIR . '/uploads';
-    $name = date('Ym') . '-' . bin2hex(random_bytes(8)) . '.' . $ext;
+    $base = date('Ym') . '-' . bin2hex(random_bytes(8));
+    // Shrink big photos (phone pictures are often 3–5 MB) to max 1200px — much faster pages
+    $outExt = function_exists('imagewebp') ? 'webp' : 'jpg';
+    if ($ext !== 'gif' && make_image($f['tmp_name'], $dir . '/' . $base . '.' . $outExt, 1200, 82)) {
+        @unlink($f['tmp_name']);
+        return $base . '.' . $outExt;
+    }
+    $name = $base . '.' . $ext;
     if (!move_uploaded_file($f['tmp_name'], $dir . '/' . $name)) {
         throw new RuntimeException('ছবি সেভ করা যায়নি। uploads ফোল্ডারের permission দেখুন।');
     }

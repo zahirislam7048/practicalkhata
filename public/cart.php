@@ -49,7 +49,7 @@ require APP_DIR . '/views/header.php';
     <table class="table">
       <?php foreach ($items as $it): ?>
       <tr>
-        <td class="w-thumb"><img src="<?= e(product_image($it)) ?>" alt=""></td>
+        <td class="w-thumb"><img src="<?= e(product_image($it, 'thumb')) ?>" alt=""></td>
         <td><a href="<?= url('product.php?slug=' . urlencode($it['slug'])) ?>"><?= e($it['title']) ?></a></td>
         <td class="num"><?= money(product_price($it)) ?></td>
         <td class="num">

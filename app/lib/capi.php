@@ -108,7 +108,21 @@ function capi_flush(): void
         fastcgi_finish_request();
     } elseif (function_exists('litespeed_finish_request')) {
         litespeed_finish_request();
+    } else {
+        // Fallback: tell the browser the page is complete, then keep working
+        $out = '';
+        while (ob_get_level()) {
+            $out = ob_get_clean() . $out;
+        }
+        if (!headers_sent()) {
+            header('Connection: close');
+            header('Content-Encoding: none');
+            header('Content-Length: ' . strlen($out));
+        }
+        echo $out;
+        flush();
     }
+    ignore_user_abort(true);
 
     $payload = ['data' => $events];
     if (setting('capi_test_code') !== '') {
@@ -123,8 +137,8 @@ function capi_flush(): void
         CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE),
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_TIMEOUT        => 4,
     ]);
     $body = curl_exec($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);

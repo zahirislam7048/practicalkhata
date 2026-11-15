@@ -54,6 +54,28 @@ function run_migrations(): void
                     ADD payment_log TEXT NULL AFTER due_amount");
             }
         },
+        4 => function () {
+            // Marketplace layout: categories, homepage banners
+            db()->exec("CREATE TABLE IF NOT EXISTS categories (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL, slug VARCHAR(140) NOT NULL UNIQUE,
+                icon VARCHAR(16) NULL, sort_order INT NOT NULL DEFAULT 0, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            db()->exec("CREATE TABLE IF NOT EXISTS banners (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, image VARCHAR(255) NOT NULL, title VARCHAR(200) NULL, link VARCHAR(255) NULL,
+                sort_order INT NOT NULL DEFAULT 0, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            if (!val("SHOW COLUMNS FROM products LIKE 'category_id'")) {
+                db()->exec("ALTER TABLE products ADD category_id INT UNSIGNED NULL AFTER slug, ADD KEY idx_cat (category_id)");
+            }
+            if (!val('SELECT COUNT(*) FROM categories')) {
+                $defaults = [['Instagram ও সোশ্যাল মিডিয়া', '📱'], ['প্র্যাকটিক্যাল খাতা', '📒'], ['নোট ও গাইড', '📚'], ['ফ্রি রিসোর্স', '🎁']];
+                foreach ($defaults as $i => [$name, $icon]) {
+                    q('INSERT INTO categories (name, slug, icon, sort_order) VALUES (?,?,?,?)', [$name, slugify($name), $icon, $i]);
+                }
+                $ig = val('SELECT id FROM categories WHERE icon = ?', ['📱']);
+                q("UPDATE products SET category_id = ? WHERE title LIKE '%Instagram%' AND category_id IS NULL", [$ig]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

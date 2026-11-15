@@ -6,6 +6,8 @@ $menu = [
     'index.php'     => 'ড্যাশবোর্ড',
     'orders.php'    => 'অর্ডার',
     'products.php'  => 'পণ্য',
+    'categories.php' => 'ক্যাটাগরি',
+    'banners.php'   => 'ব্যানার',
     'coupons.php'   => 'কুপন',
     'customers.php' => 'কাস্টমার',
     'settings.php'  => 'সেটিংস',
@@ -18,8 +20,8 @@ $active = ['order.php' => 'orders.php', 'product-edit.php' => 'products.php', 'c
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title><?= e(($title ?? 'অ্যাডমিন') . ' | ' . setting('site_name', 'Practical Khata')) ?></title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=5">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=7">
 </head>
 <body class="admin">
 <aside class="admin-side">

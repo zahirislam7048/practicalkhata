@@ -3,6 +3,8 @@ require dirname(__DIR__) . '/_init.php';
 require_admin();
 
 $fields = [
+    'theme'         => ['সাইটের রঙ', 'theme'],
+    'flash_sale_end' => ['ফ্ল্যাশ সেল শেষ হওয়ার সময় (দিলে হোম পেজে কাউন্টডাউন দেখাবে)', 'datetime'],
     'site_name'     => ['সাইটের নাম', 'text'],
     'tagline'       => ['ট্যাগলাইন', 'text'],
     'bkash_number'  => ['bKash নাম্বার (খালি রাখলে bKash বন্ধ)', 'text'],
@@ -32,7 +34,16 @@ require APP_DIR . '/views/admin_header.php';
   <?= csrf_field() ?>
   <?php foreach ($fields as $k => [$label, $type]): ?>
     <label><?= e($label) ?>
-      <?php if ($type === 'textarea'): ?>
+      <?php if ($type === 'theme'): ?>
+        <div class="theme-pick">
+          <?php foreach (theme_presets() as $tk => $tp): ?>
+            <label class="theme-opt"><input type="radio" name="theme" value="<?= $tk ?>" <?= setting('theme', 'navy') === $tk ? 'checked' : '' ?>>
+              <span class="sw" style="background:<?= $tp[1] ?>"></span><span class="sw" style="background:<?= $tp[5] ?>"></span> <?= e($tp[0]) ?></label>
+          <?php endforeach; ?>
+        </div>
+      <?php elseif ($type === 'datetime'): ?>
+        <input type="datetime-local" name="<?= $k ?>" value="<?= setting($k) ? e(date('Y-m-d\TH:i', strtotime(setting($k)))) : '' ?>">
+      <?php elseif ($type === 'textarea'): ?>
         <textarea name="<?= $k ?>" rows="4"><?= e(setting($k)) ?></textarea>
       <?php else: ?>
         <input name="<?= $k ?>" type="<?= $type === 'password' ? 'password' : 'text' ?>" value="<?= e($k === 'pixel_id' ? pixel_id() : setting($k)) ?>" <?= $type === 'password' ? 'autocomplete="off"' : '' ?>>

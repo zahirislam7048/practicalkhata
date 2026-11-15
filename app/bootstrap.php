@@ -13,6 +13,12 @@ error_reporting(E_ALL);
 date_default_timezone_set('Asia/Dhaka');
 mb_internal_encoding('UTF-8');
 
+// Buffer the page so it can be sent completely (with Content-Length) before slow background work
+// (always our own unlimited buffer — hosts often have a small 4 KB one that flushes early)
+if (PHP_SAPI !== 'cli') {
+    ob_start();
+}
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_name('pk_session');
     session_set_cookie_params([
