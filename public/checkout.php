@@ -88,6 +88,7 @@ if (!is_post()) {
 $title = 'চেকআউট';
 require APP_DIR . '/views/header.php';
 ?>
+<?php $step = 2; require APP_DIR . '/views/steps.php'; ?>
 <h1>চেকআউট</h1>
 <?php foreach ($errors as $err): ?><div class="alert alert-error"><?= e($err) ?></div><?php endforeach; ?>
 <div class="checkout-grid">
@@ -122,7 +123,7 @@ require APP_DIR . '/views/header.php';
       </label>
     <?php endif; ?>
     <?php if ($isFree || $methods): ?>
-      <button class="btn btn-block"><?= $isFree ? 'অর্ডার সম্পন্ন করুন' : 'অর্ডার জমা দিন' ?></button>
+      <button class="btn btn-accent btn-lg btn-block"><?= icon('lock', 18) ?> <?= $isFree ? 'অর্ডার সম্পন্ন করুন' : 'অর্ডার জমা দিন' ?></button>
     <?php endif; ?>
   </form>
   <aside class="card summary">

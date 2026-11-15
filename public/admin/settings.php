@@ -8,7 +8,9 @@ $fields = [
     'bkash_number'  => ['bKash নাম্বার (খালি রাখলে bKash বন্ধ)', 'text'],
     'nagad_number'  => ['Nagad নাম্বার (খালি রাখলে Nagad বন্ধ)', 'text'],
     'payment_note'  => ['পেমেন্ট নির্দেশনা (চেকআউটে দেখাবে)', 'textarea'],
+    'announcement'  => ['উপরের ঘোষণা লাইন (খালি রাখলে ডিফল্ট লেখা)', 'text'],
     'contact_phone' => ['যোগাযোগ নাম্বার', 'text'],
+    'whatsapp_number' => ['WhatsApp নাম্বার (দিলে সাইটে WhatsApp বাটন দেখাবে)', 'text'],
     'contact_email' => ['যোগাযোগ ইমেইল', 'text'],
     'facebook_url'  => ['Facebook পেজ লিংক', 'text'],
 ];

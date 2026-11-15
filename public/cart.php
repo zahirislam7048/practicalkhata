@@ -39,9 +39,10 @@ $t = cart_totals($items);
 $title = 'কার্ট';
 require APP_DIR . '/views/header.php';
 ?>
-<h1>আপনার কার্ট</h1>
+<?php $step = 1; require APP_DIR . '/views/steps.php'; ?>
+<h1>আপনার কার্ট <small class="muted">(<?= bn(count($items)) ?>টি পণ্য)</small></h1>
 <?php if (!$items): ?>
-  <p class="empty">কার্ট খালি। <a href="<?= url() ?>">পণ্য দেখুন</a></p>
+  <div class="empty"><?= icon('cart', 44) ?><p>আপনার কার্ট খালি।</p><a class="btn" href="<?= url() ?>">কেনাকাটা শুরু করুন</a></div>
 <?php else: ?>
 <div class="checkout-grid">
   <div class="card">
@@ -55,7 +56,7 @@ require APP_DIR . '/views/header.php';
           <form method="post"><?= csrf_field() ?>
             <input type="hidden" name="action" value="remove">
             <input type="hidden" name="id" value="<?= (int)$it['id'] ?>">
-            <button class="link-btn danger" title="সরান">✕</button>
+            <button class="link-btn danger" title="সরান" aria-label="সরান"><?= icon('trash', 18) ?></button>
           </form>
         </td>
       </tr>
@@ -77,7 +78,8 @@ require APP_DIR . '/views/header.php';
       </form>
     <?php endif; ?>
     <div class="sum-row total"><span>মোট</span><span><?= money($t['total']) ?></span></div>
-    <a class="btn btn-block" href="<?= url('checkout.php') ?>">চেকআউট করুন</a>
+    <a class="btn btn-accent btn-lg btn-block" href="<?= url('checkout.php') ?>"><?= icon('lock', 18) ?> চেকআউট করুন</a>
+    <a class="small center-link" href="<?= url() ?>">← আরও কেনাকাটা করুন</a>
   </aside>
 </div>
 <?php endif; ?>

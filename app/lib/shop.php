@@ -182,3 +182,11 @@ function tracking_customer(): array
         'phone'     => $phone,
     ];
 }
+
+/** Active products with how many paid copies were sold. */
+function shop_products(string $where = '1=1', array $params = [], string $order = 'p.created_at DESC', int $limit = 12, int $offset = 0): array
+{
+    return rows("SELECT p.*, (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
+                 WHERE oi.product_id = p.id AND o.status = 'paid') AS sold
+                 FROM products p WHERE p.is_active = 1 AND ($where) ORDER BY $order LIMIT $limit OFFSET $offset", $params);
+}
