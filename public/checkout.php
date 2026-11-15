@@ -1,11 +1,11 @@
 <?php
 require __DIR__ . '/_init.php';
 
-$user = require_login();
+$user = current_user();   // null = guest checkout
 $items = cart_items();
 
-// Don't charge again for something the customer already owns
-$owned = owned_product_ids((int)$user['id']);
+// Don't charge again for something a logged-in customer already owns
+$owned = $user ? owned_product_ids((int)$user['id']) : [];
 $already = array_filter($items, fn($p) => in_array((int)$p['id'], $owned, true));
 foreach ($already as $p) {
     cart_remove((int)$p['id']);
@@ -31,6 +31,24 @@ if (is_post()) {
     $method = $isFree ? 'free' : input('method');
     $sender = preg_replace('/\D+/', '', input('sender'));
     $trx = strtoupper(preg_replace('/\s+/', '', input('trx')));
+    $guest = null;
+    if (!$user) {
+        $guest = [
+            'name'  => input('guest_name'),
+            'phone' => preg_replace('/\D+/', '', input('guest_phone')),
+            'email' => mb_strtolower(input('guest_email')),
+        ];
+        if ($guest['name'] === '') {
+            $errors[] = 'আপনার নাম লিখুন।';
+        }
+        if (!preg_match('/^01[3-9]\d{8}$/', $guest['phone'])) {
+            $errors[] = 'সঠিক মোবাইল নাম্বার লিখুন (যেমন 017XXXXXXXX)।';
+        }
+        if ($guest['email'] !== '' && !filter_var($guest['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'সঠিক ইমেইল লিখুন, অথবা খালি রাখুন।';
+        }
+        $_SESSION['guest'] = $guest; // remembered for the next order and for tracking
+    }
 
     if (!$isFree) {
         if (!isset($methods[$method])) {
@@ -51,9 +69,11 @@ if (is_post()) {
         $pdo->beginTransaction();
         try {
             $orderNo = new_order_no();
-            q('INSERT INTO orders (order_no, user_id, subtotal, discount, total, coupon_id, coupon_code, payment_method, sender_number, trx_id, status)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?)', [
-                $orderNo, $user['id'], $t['subtotal'], $t['discount'], $t['total'],
+            $token = bin2hex(random_bytes(20));
+            q('INSERT INTO orders (order_no, user_id, guest_name, guest_phone, guest_email, access_token, subtotal, discount, total, coupon_id, coupon_code, payment_method, sender_number, trx_id, status)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [
+                $orderNo, $user['id'] ?? null, $guest['name'] ?? null, $guest['phone'] ?? null, ($guest['email'] ?? '') ?: null, $token,
+                $t['subtotal'], $t['discount'], $t['total'],
                 $t['coupon']['id'] ?? null, $t['coupon']['code'] ?? null,
                 $method, $isFree ? null : $sender, $isFree ? null : $trx,
                 $isFree ? 'paid' : 'pending',
@@ -77,7 +97,12 @@ if (is_post()) {
         flash('success', $isFree
             ? 'অর্ডার সম্পন্ন! এখনই ডাউনলোড করতে পারবেন।'
             : 'অর্ডার #' . $orderNo . ' জমা হয়েছে। পেমেন্ট যাচাই হলে ডাউনলোড চালু হবে।');
-        redirect('account.php');
+        if ($user) {
+            redirect('account.php');
+        }
+        // Guests: remember their orders in this browser and show the secret order page
+        $_SESSION['guest_orders'][] = $token;
+        redirect('order.php?t=' . $token);
     }
 }
 
@@ -94,6 +119,17 @@ require APP_DIR . '/views/header.php';
 <div class="checkout-grid">
   <form method="post" class="card form">
     <?= csrf_field() ?>
+    <?php $g = $_SESSION['guest'] ?? []; if (!$user): ?>
+      <div class="guest-box">
+        <h3><?= icon('user', 20) ?> আপনার তথ্য</h3>
+        <p class="muted small">অ্যাকাউন্ট ছাড়াই কিনতে পারবেন। অ্যাকাউন্ট আছে? <a href="<?= url('login.php?next=' . urlencode(url('checkout.php'))) ?>">লগইন করুন</a></p>
+        <label>আপনার নাম *<input name="guest_name" value="<?= e(input('guest_name', (string)($g['name'] ?? ''))) ?>" required autocomplete="name"></label>
+        <div class="row2">
+          <label>মোবাইল নাম্বার *<input name="guest_phone" inputmode="numeric" placeholder="01XXXXXXXXX" value="<?= e(input('guest_phone', (string)($g['phone'] ?? ''))) ?>" required autocomplete="tel"></label>
+          <label>ইমেইল <small class="muted">(ঐচ্ছিক)</small><input type="email" name="guest_email" value="<?= e(input('guest_email', (string)($g['email'] ?? ''))) ?>" autocomplete="email"></label>
+        </div>
+      </div>
+    <?php endif; ?>
     <?php if ($isFree): ?>
       <h3>এই অর্ডারে কোনো পেমেন্ট লাগবে না</h3>
       <p class="muted">নিচের বাটনে চাপ দিলেই অর্ডার সম্পন্ন হবে।</p>
@@ -116,7 +152,7 @@ require APP_DIR . '/views/header.php';
       </div>
       <h3>২. পেমেন্টের তথ্য দিন</h3>
       <label>যে নাম্বার থেকে টাকা পাঠিয়েছেন
-        <input name="sender" inputmode="numeric" placeholder="01XXXXXXXXX" value="<?= e(input('sender', (string)$user['phone'])) ?>" required>
+        <input name="sender" inputmode="numeric" placeholder="01XXXXXXXXX" value="<?= e(input('sender', (string)($user['phone'] ?? ($g['phone'] ?? '')))) ?>" required>
       </label>
       <label>Transaction ID (TrxID)
         <input name="trx" placeholder="যেমন: 9A7B6C5D4E" value="<?= e(input('trx')) ?>" required autocomplete="off">

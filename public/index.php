@@ -39,7 +39,7 @@ require APP_DIR . '/views/header.php';
   <div class="hero-text">
     <span class="hero-kicker"><?= icon('zap', 16) ?> ডিজিটাল খাতা • নোট • গাইড</span>
     <h1>পড়াশোনা ও দক্ষতার <span class="accent">প্র্যাকটিক্যাল খাতা</span> এখন এক ক্লিকে</h1>
-    <p>bKash বা Nagad এ পেমেন্ট করুন — যাচাইয়ের পর আপনার অ্যাকাউন্ট থেকেই ডাউনলোড।</p>
+    <p>bKash বা Nagad এ পেমেন্ট করুন — অ্যাকাউন্ট ছাড়াই কিনুন, যাচাইয়ের পর সাথে সাথে ডাউনলোড।</p>
     <div class="hero-cta">
       <a class="btn btn-accent btn-lg" href="#products">কেনাকাটা শুরু করুন</a>
       <?php if ($deals): ?><a class="btn btn-ghost btn-lg" href="<?= url('index.php?offer=1#products') ?>">অফার দেখুন</a><?php endif; ?>

@@ -17,7 +17,7 @@ $cartN = cart_count();
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=3">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=4">
 <?php require __DIR__ . '/tracking_head.php'; ?>
 <link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
 </head>
@@ -57,7 +57,8 @@ $cartN = cart_count();
       <a href="<?= url() ?>" class="<?= $page === 'index.php' && empty($_GET) ? 'active' : '' ?>">হোম</a>
       <a href="<?= url('index.php?sort=new#products') ?>" class="<?= isset($_GET['sort']) && empty($_GET['offer']) ? 'active' : '' ?>">সব পণ্য</a>
       <a href="<?= url('index.php?offer=1#products') ?>" class="<?= !empty($_GET['offer']) ? 'active' : '' ?>"><?= icon('tag', 15) ?> অফার</a>
-      <a href="<?= url('account.php') ?>" class="<?= $page === 'account.php' ? 'active' : '' ?>"><?= icon('download', 15) ?> আমার ডাউনলোড</a>
+      <a href="<?= url($u ? 'account.php' : 'track.php') ?>" class="<?= in_array($page, ['account.php', 'order.php'], true) ? 'active' : '' ?>"><?= icon('download', 15) ?> আমার ডাউনলোড</a>
+      <a href="<?= url('track.php') ?>" class="<?= $page === 'track.php' ? 'active' : '' ?>"><?= icon('search', 15) ?> অর্ডার ট্র্যাক</a>
       <?php if ($u && $u['role'] === 'admin'): ?><a href="<?= url('admin/') ?>" class="admin-link">অ্যাডমিন প্যানেল</a><?php endif; ?>
     </div>
   </nav>

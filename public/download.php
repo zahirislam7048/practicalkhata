@@ -1,9 +1,13 @@
 <?php
 require __DIR__ . '/_init.php';
 
-$user = require_login();
+$token = (string)($_GET['t'] ?? '');
+$user = current_user();
+if (!$user && $token === '') {
+    $user = require_login();
+}
 $item = row(
-    "SELECT oi.*, o.user_id, o.status, p.file_path, p.file_name, p.download_limit
+    "SELECT oi.*, o.user_id, o.status, o.access_token, p.file_path, p.file_name, p.download_limit
      FROM order_items oi
      JOIN orders o ON o.id = oi.order_id
      LEFT JOIN products p ON p.id = oi.product_id
@@ -12,7 +16,9 @@ $item = row(
 );
 
 $admin = is_admin();
-if (!$item || ((int)$item['user_id'] !== (int)$user['id'] && !$admin) || ($item['status'] !== 'paid' && !$admin)) {
+$byToken = $item && $token !== '' && $item['access_token'] && hash_equals($item['access_token'], $token);
+$byUser = $item && $user && $item['user_id'] !== null && (int)$item['user_id'] === (int)$user['id'];
+if (!$item || (!$byToken && !$byUser && !$admin) || ($item['status'] !== 'paid' && !$admin)) {
     http_response_code(403);
     exit('এই ফাইল ডাউনলোডের অনুমতি নেই।');
 }

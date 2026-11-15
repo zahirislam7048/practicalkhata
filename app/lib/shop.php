@@ -167,13 +167,18 @@ function track_items(array $products): array
 function tracking_customer(): array
 {
     $u = current_user();
+    if (!$u && !empty($_SESSION['guest']['name'])) {
+        // Guest who already filled the checkout form
+        $g = $_SESSION['guest'];
+        $u = ['id' => '', 'name' => $g['name'], 'email' => $g['email'] ?? '', 'phone' => $g['phone'] ?? '', 'guest' => true];
+    }
     $phone = preg_replace('/\D+/', '', (string)($u['phone'] ?? ''));
     if (str_starts_with($phone, '01')) {
         $phone = '88' . $phone; // 01XXXXXXXXX → 8801XXXXXXXXX (country code for Meta matching)
     }
     $parts = preg_split('/\s+/u', trim((string)($u['name'] ?? '')), 2);
     return [
-        'logged_in' => (bool)$u,
+        'logged_in' => $u && empty($u['guest']),
         'id'        => $u ? (string)$u['id'] : '',
         'name'      => $u ? $u['name'] : 'Guest',
         'first'     => $u ? mb_strtolower($parts[0]) : '',

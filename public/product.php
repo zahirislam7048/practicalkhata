@@ -71,7 +71,7 @@ require APP_DIR . '/views/header.php';
     <ul class="pd-perks">
       <li><?= icon('zap', 18) ?> পেমেন্ট যাচাইয়ের পর সাথে সাথে ডাউনলোড</li>
       <li><?= icon('download', 18) ?> সর্বোচ্চ <?= bn((int)$prod['download_limit']) ?> বার ডাউনলোড করা যাবে</li>
-      <li><?= icon('lock', 18) ?> ফাইল শুধু আপনার অ্যাকাউন্টে থাকবে</li>
+      <li><?= icon('user', 18) ?> অ্যাকাউন্ট ছাড়াই কেনা যায়</li>
       <?php if ($wa): ?><li><?= icon('support', 18) ?> প্রশ্ন আছে? <a href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp করুন</a></li><?php endif; ?>
     </ul>
   </div>
@@ -87,15 +87,16 @@ require APP_DIR . '/views/header.php';
   <section class="card">
     <h2>কীভাবে কিনবেন?</h2>
     <ol class="howto">
-      <li><b>১</b><span><strong>এখনই কিনুন</strong> চাপুন, অ্যাকাউন্ট না থাকলে ১ মিনিটে রেজিস্টার করুন।</span></li>
+      <li><b>১</b><span><strong>এখনই কিনুন</strong> চাপুন — অ্যাকাউন্ট ছাড়াই শুধু নাম ও মোবাইল নাম্বার দিয়ে কেনা যায়।</span></li>
       <li><b>২</b><span>চেকআউটে দেখানো bKash / Nagad নাম্বারে <strong><?= $price > 0 ? money($price) : '' ?></strong> Send Money করুন।</span></li>
       <li><b>৩</b><span>যে নাম্বার থেকে পাঠিয়েছেন সেটি ও <strong>Transaction ID</strong> দিয়ে অর্ডার জমা দিন।</span></li>
-      <li><b>৪</b><span>পেমেন্ট যাচাই হলে <strong>আমার ডাউনলোড</strong> থেকে ফাইল নামিয়ে নিন।</span></li>
+      <li><b>৪</b><span>পেমেন্ট যাচাই হলে অর্ডারের পেজ বা <strong>আমার ডাউনলোড</strong> থেকে ফাইল নামিয়ে নিন।</span></li>
     </ol>
   </section>
   <section class="card faq">
     <h2>সাধারণ জিজ্ঞাসা</h2>
-    <details><summary>ফাইল কখন পাব?</summary><p>পেমেন্ট যাচাই হওয়ার সাথে সাথেই আপনার অ্যাকাউন্টের "আমার ডাউনলোড" অংশে ডাউনলোড বাটন চালু হবে।</p></details>
+    <details><summary>অ্যাকাউন্ট খোলা কি বাধ্যতামূলক?</summary><p>না। শুধু নাম ও মোবাইল নাম্বার দিয়েই কিনতে পারবেন। অর্ডারের পর একটি ডাউনলোড লিংক পাবেন — সেটি সেভ করে রাখুন।</p></details>
+    <details><summary>ফাইল কখন পাব?</summary><p>পেমেন্ট যাচাই হওয়ার সাথে সাথেই অর্ডারের পেজে (অথবা অ্যাকাউন্টের "আমার ডাউনলোড" অংশে) ডাউনলোড বাটন চালু হবে।</p></details>
     <details><summary>কোন ফরম্যাটে ফাইল পাব?</summary><p>এই পণ্যটি <?= e($ext) ?> ফাইল হিসেবে দেওয়া হয়। মোবাইল বা কম্পিউটার — দুটোতেই খুলতে পারবেন।</p></details>
     <details><summary>ভুল Transaction ID দিলে কী হবে?</summary><p>যাচাই করতে না পারলে আমরা যোগাযোগ করব। সঠিক তথ্য দিয়ে আবার অর্ডার করতে পারবেন।</p></details>
   </section>

@@ -23,7 +23,7 @@
     <div>
       <h4>আমার অ্যাকাউন্ট</h4>
       <a href="<?= url('account.php') ?>">আমার ডাউনলোড</a>
-      <a href="<?= url('account.php') ?>">অর্ডার হিস্টোরি</a>
+      <a href="<?= url('track.php') ?>">অর্ডার ট্র্যাক করুন</a>
       <a href="<?= url('login.php') ?>">লগইন</a>
       <a href="<?= url('register.php') ?>">রেজিস্টার</a>
     </div>
@@ -48,7 +48,7 @@
   <a href="<?= url() ?>"><?= icon('home', 22) ?><span>হোম</span></a>
   <a href="<?= url('index.php?offer=1#products') ?>"><?= icon('tag', 22) ?><span>অফার</span></a>
   <a href="<?= url('cart.php') ?>" class="mn-cart"><?= icon('cart', 22) ?><?php if (cart_count()): ?><b><?= bn(cart_count()) ?></b><?php endif; ?><span>কার্ট</span></a>
-  <a href="<?= url('account.php') ?>"><?= icon('user', 22) ?><span>অ্যাকাউন্ট</span></a>
+  <a href="<?= url(current_user() ? 'account.php' : 'track.php') ?>"><?= icon('download', 22) ?><span>ডাউনলোড</span></a>
 </nav>
 <?php require __DIR__ . '/tracking_events.php'; ?>
 <script src="<?= url('assets/js/app.js') ?>?v=3"></script>

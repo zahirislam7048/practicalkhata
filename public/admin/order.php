@@ -22,7 +22,8 @@ if (is_post()) {
     redirect('admin/order.php?id=' . $id);
 }
 
-$o = row('SELECT o.*, u.name, u.email, u.phone FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ?', [$id]);
+$o = row('SELECT o.*, COALESCE(u.name, o.guest_name) AS name, COALESCE(u.email, o.guest_email) AS email, COALESCE(u.phone, o.guest_phone) AS phone
+          FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ?', [$id]);
 if (!$o) {
     redirect('admin/orders.php');
 }
@@ -58,7 +59,7 @@ require APP_DIR . '/views/admin_header.php';
   <section class="card">
     <h3>কাস্টমার</h3>
     <dl class="dl">
-      <dt>নাম</dt><dd><?= e($o['name']) ?></dd>
+      <dt>নাম</dt><dd><?= e($o['name']) ?><?php if (!$o['user_id']): ?> <span class="badge">গেস্ট</span><?php endif; ?></dd>
       <dt>ইমেইল</dt><dd><?= e($o['email']) ?></dd>
       <dt>মোবাইল</dt><dd><?= e((string)$o['phone']) ?></dd>
     </dl>

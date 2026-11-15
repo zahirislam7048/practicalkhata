@@ -46,7 +46,11 @@ CREATE TABLE IF NOT EXISTS coupons (
 CREATE TABLE IF NOT EXISTS orders (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_no VARCHAR(20) NOT NULL UNIQUE,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NULL,
+  guest_name VARCHAR(120) NULL,
+  guest_phone VARCHAR(20) NULL,
+  guest_email VARCHAR(190) NULL,
+  access_token CHAR(40) NULL,
   subtotal DECIMAL(10,2) NOT NULL,
   discount DECIMAL(10,2) NOT NULL DEFAULT 0,
   total DECIMAL(10,2) NOT NULL,
@@ -61,6 +65,7 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_trx (payment_method, trx_id),
   KEY idx_user (user_id),
+  UNIQUE KEY uniq_token (access_token),
   KEY idx_status (status),
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

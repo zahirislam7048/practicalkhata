@@ -30,6 +30,21 @@ function run_migrations(): void
                 5,
             ]);
         },
+        2 => function () {
+            // Guest checkout: orders without an account, reached by a secret link
+            if (!val("SHOW COLUMNS FROM orders LIKE 'access_token'")) {
+                db()->exec("ALTER TABLE orders
+                    MODIFY user_id INT UNSIGNED NULL,
+                    ADD guest_name VARCHAR(120) NULL AFTER user_id,
+                    ADD guest_phone VARCHAR(20) NULL AFTER guest_name,
+                    ADD guest_email VARCHAR(190) NULL AFTER guest_phone,
+                    ADD access_token CHAR(40) NULL AFTER guest_email,
+                    ADD UNIQUE KEY uniq_token (access_token)");
+            }
+            foreach (rows('SELECT id FROM orders WHERE access_token IS NULL') as $o) {
+                q('UPDATE orders SET access_token = ? WHERE id = ?', [bin2hex(random_bytes(20)), $o['id']]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

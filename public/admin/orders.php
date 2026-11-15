@@ -12,12 +12,12 @@ if (in_array($status, ['pending', 'paid', 'rejected'], true)) {
     $params[] = $status;
 }
 if ($s !== '') {
-    $where[] = '(o.order_no LIKE ? OR o.trx_id LIKE ? OR o.sender_number LIKE ? OR u.email LIKE ? OR u.name LIKE ?)';
-    array_push($params, ...array_fill(0, 5, "%$s%"));
+    $where[] = '(o.order_no LIKE ? OR o.trx_id LIKE ? OR o.sender_number LIKE ? OR u.email LIKE ? OR u.name LIKE ? OR o.guest_name LIKE ? OR o.guest_phone LIKE ? OR o.guest_email LIKE ?)';
+    array_push($params, ...array_fill(0, 8, "%$s%"));
 }
 $w = implode(' AND ', $where);
-$p = paginate((int)val("SELECT COUNT(*) FROM orders o JOIN users u ON u.id = o.user_id WHERE $w", $params), 25);
-$orders = rows("SELECT o.*, u.name, u.email FROM orders o JOIN users u ON u.id = o.user_id WHERE $w
+$p = paginate((int)val("SELECT COUNT(*) FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE $w", $params), 25);
+$orders = rows("SELECT o.*, COALESCE(u.name, o.guest_name) AS name, COALESCE(u.email, o.guest_email, o.guest_phone) AS email FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE $w
                 ORDER BY o.created_at DESC LIMIT {$p['limit']} OFFSET {$p['offset']}", $params);
 ?>
 <form class="toolbar" method="get">
@@ -36,7 +36,7 @@ $orders = rows("SELECT o.*, u.name, u.email FROM orders o JOIN users u ON u.id =
   <tr>
     <td><a href="order.php?id=<?= (int)$o['id'] ?>">#<?= e($o['order_no']) ?></a></td>
     <td class="small"><?= e(date('d M y, h:i A', strtotime($o['created_at']))) ?></td>
-    <td><?= e($o['name']) ?><div class="muted small"><?= e($o['email']) ?></div></td>
+    <td><?= e($o['name']) ?><?php if (!$o['user_id']): ?> <span class="badge">গেস্ট</span><?php endif; ?><div class="muted small"><?= e((string)$o['email']) ?></div></td>
     <td class="small"><?= e(method_label($o['payment_method'])) ?><?php if ($o['trx_id']): ?><div><code><?= e($o['trx_id']) ?></code> · <?= e($o['sender_number']) ?></div><?php endif; ?></td>
     <td class="num"><?= money($o['total']) ?></td>
     <td><span class="status status-<?= e($o['status']) ?>"><?= e(status_label($o['status'])) ?></span></td>

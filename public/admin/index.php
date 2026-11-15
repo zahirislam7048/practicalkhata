@@ -12,7 +12,7 @@ $stats = [
     'কাস্টমার'         => (int)val("SELECT COUNT(*) FROM users WHERE role = 'customer'"),
     'সক্রিয় পণ্য'      => (int)val('SELECT COUNT(*) FROM products WHERE is_active = 1'),
 ];
-$pending = rows("SELECT o.*, u.name FROM orders o JOIN users u ON u.id = o.user_id WHERE o.status = 'pending' ORDER BY o.created_at ASC LIMIT 10");
+$pending = rows("SELECT o.*, COALESCE(u.name, o.guest_name) AS name FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.status = 'pending' ORDER BY o.created_at ASC LIMIT 10");
 $top = rows("SELECT oi.title, COUNT(*) sold, SUM(oi.price) revenue FROM order_items oi JOIN orders o ON o.id = oi.order_id
              WHERE o.status = 'paid' GROUP BY oi.product_id, oi.title ORDER BY sold DESC LIMIT 5");
 $setupMissing = !setting('bkash_number') && !setting('nagad_number');

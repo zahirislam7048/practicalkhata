@@ -36,3 +36,7 @@ if ($GLOBALS['config'] === null && !defined('PK_INSTALLER')) {
     header('Location: ' . (str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') ? '../' : '') . 'install.php');
     exit;
 }
+
+if ($GLOBALS['config'] !== null && !defined('PK_INSTALLER')) {
+    run_migrations();
+}

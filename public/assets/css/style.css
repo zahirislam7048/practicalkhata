@@ -387,3 +387,14 @@ body.admin { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh;
   .table { font-size: .9rem; }
   .w-thumb { width: 60px; } .w-thumb img { width: 54px; height: 40px; }
 }
+
+/* ---------- Guest checkout & order page ---------- */
+.guest-box { background: var(--brand-50); border: 1px solid var(--brand-soft); border-radius: 12px; padding: 16px 16px 2px; margin-bottom: 20px; }
+.guest-box h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: var(--brand-dark); }
+.guest-box > p { margin: 0 0 12px; }
+.order-hero { text-align: center; border-top: 4px solid var(--accent); }
+.order-hero h1 { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--brand-dark); font-size: 1.5rem; }
+.save-link { text-align: left; background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.copy-row { display: flex; gap: 8px; margin: 8px 0; }
+.copy-row input { font-size: .85rem; background: #fff; }
+.copy-row .btn small { font-size: .9rem; color: #fff; }
