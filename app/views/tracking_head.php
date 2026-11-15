@@ -1,8 +1,10 @@
 <?php
 // Google Search Console, Google Tag Manager and Meta Pixel (storefront pages only)
 const PK_GTM_ID   = 'GTM-MKZ5XQ3D';
-const PK_PIXEL_ID = '1354603696469186';
+define('PK_PIXEL_ID', pixel_id());
 $pkCustomer = tracking_customer();
+$pkPageViewId = new_event_id('pv');
+capi_queue('PageView', $pkPageViewId);
 // Pixel Advanced Matching — fbq hashes these in the browser before sending to Meta
 $pkMatch = array_filter([
     'em'          => $pkCustomer['email'],
@@ -17,6 +19,7 @@ $pkMatch = array_filter([
 <!-- Google Tag Manager -->
 <script>window.dataLayer = window.dataLayer || [];
 dataLayer.push(<?= json_encode([
+    'page_event_id'      => $pkPageViewId,
     'customer_logged_in' => $pkCustomer['logged_in'],
     'customer_id'        => $pkCustomer['id'],
     'customer_name'      => $pkCustomer['name'],
@@ -40,7 +43,7 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '<?= PK_PIXEL_ID ?>'<?= $pkMatch ? ', ' . json_encode($pkMatch, JSON_UNESCAPED_UNICODE) : '' ?>);
-fbq('track', 'PageView');
+fbq('track', 'PageView', {}, {eventID: <?= json_encode($pkPageViewId) ?>});
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=<?= PK_PIXEL_ID ?>&ev=PageView&noscript=1"

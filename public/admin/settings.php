@@ -13,6 +13,9 @@ $fields = [
     'whatsapp_number' => ['WhatsApp নাম্বার (দিলে সাইটে WhatsApp বাটন দেখাবে)', 'text'],
     'contact_email' => ['যোগাযোগ ইমেইল', 'text'],
     'facebook_url'  => ['Facebook পেজ লিংক', 'text'],
+    'pixel_id'      => ['Meta Pixel ID', 'text'],
+    'capi_token'    => ['Conversions API Access Token (সার্ভার সাইড ট্র্যাকিং)', 'password'],
+    'capi_test_code' => ['Test Event Code (শুধু টেস্টের সময়, পরে খালি করুন)', 'text'],
 ];
 if (is_post()) {
     csrf_check();
@@ -32,10 +35,20 @@ require APP_DIR . '/views/admin_header.php';
       <?php if ($type === 'textarea'): ?>
         <textarea name="<?= $k ?>" rows="4"><?= e(setting($k)) ?></textarea>
       <?php else: ?>
-        <input name="<?= $k ?>" value="<?= e(setting($k)) ?>">
+        <input name="<?= $k ?>" type="<?= $type === 'password' ? 'password' : 'text' ?>" value="<?= e($k === 'pixel_id' ? pixel_id() : setting($k)) ?>" <?= $type === 'password' ? 'autocomplete="off"' : '' ?>>
       <?php endif; ?>
     </label>
   <?php endforeach; ?>
   <button class="btn">সেভ করুন</button>
 </form>
+<div class="card narrow">
+  <h3>সার্ভার সাইড ট্র্যাকিং (Meta Conversions API)</h3>
+  <?php if (capi_enabled()): ?>
+    <p><span class="status status-paid">চালু</span> Pixel <?= e(pixel_id()) ?><?= setting('capi_test_code') ? ' · <b>টেস্ট মোড</b> (' . e(setting('capi_test_code')) . ')' : '' ?></p>
+  <?php else: ?>
+    <p><span class="status status-rejected">বন্ধ</span> Access Token দিলে চালু হবে।</p>
+  <?php endif; ?>
+  <p class="small"><b>সর্বশেষ পাঠানো:</b> <?= e(setting('capi_last_status', 'এখনো কিছু পাঠানো হয়নি — সাইটের কোনো পেজ খুলুন, তারপর এই পেজ রিফ্রেশ করুন।')) ?></p>
+  <p class="muted small">Token পাবেন: Meta Events Manager → আপনার Pixel → Settings → Conversions API → <b>Generate access token</b>।</p>
+</div>
 <?php require APP_DIR . '/views/admin_footer.php';

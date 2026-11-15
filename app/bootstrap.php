@@ -30,6 +30,7 @@ require APP_DIR . '/lib/helpers.php';
 require APP_DIR . '/lib/auth.php';
 require APP_DIR . '/lib/shop.php';
 require APP_DIR . '/lib/migrations.php';
+require APP_DIR . '/lib/capi.php';
 
 // Every page except the installer needs a config.
 if ($GLOBALS['config'] === null && !defined('PK_INSTALLER')) {

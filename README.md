@@ -54,3 +54,12 @@ Secret না দিলে: cPanel → Git Version Control → Manage → *Pull 
 cp app/config.sample.php app/config.php   # ডাটাবেস তথ্য দিন
 php -S localhost:8000 -t public
 ```
+
+## ট্র্যাকিং (Browser + Server side)
+
+- **Browser:** Meta Pixel + Google Tag Manager (`app/views/tracking_head.php`), ইকমার্স ইভেন্ট dataLayer এ।
+- **Server:** Meta Conversions API (`app/lib/capi.php`) — PageView, ViewContent, AddToCart, InitiateCheckout, Purchase।
+  প্রতিটি ইভেন্ট ব্রাউজার ও সার্ভার থেকে একই `event_id` নিয়ে যায়, তাই Meta ডুপ্লিকেট গোনে না।
+- চালু করতে: অ্যাডমিন → সেটিংস → **Conversions API Access Token** দিন (Events Manager → Pixel → Settings → Generate access token)।
+  টেস্টের সময় Events Manager → Test events থেকে **Test Event Code** নিয়ে সেটিংসে দিন, কাজ শেষে খালি করুন।
+- সর্বশেষ পাঠানোর ফলাফল সেটিংস পেজে দেখা যায়।

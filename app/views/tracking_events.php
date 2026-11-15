@@ -17,8 +17,9 @@ if (window.fbq) fbq('track', <?= json_encode($fbEvent) ?>, <?= json_encode([
 dataLayer.push({ecommerce: null});
 dataLayer.push(<?= json_encode(array_filter([
     'event'     => $gaEvent,
+    'event_id'  => $data['event_id'] ?? null,
     'ecommerce' => array_filter([
-        'transaction_id' => $data['event_id'] ?? null,
+        'transaction_id' => $gaEvent === 'purchase' ? ($data['event_id'] ?? null) : null,
         'currency'       => 'BDT',
         'value'          => (float)$data['value'],
         'coupon'         => $data['coupon'] ?? null,

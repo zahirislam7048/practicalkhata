@@ -155,7 +155,18 @@ function set_order_status(int $orderId, string $status, string $note = '', ?floa
  */
 function track_event(string $fbEvent, string $gaEvent, array $items, float $value, array $extra = [], bool $later = false): void
 {
+    $extra['event_id'] ??= new_event_id(strtolower($fbEvent));
     $ev = [$fbEvent, $gaEvent, ['items' => $items, 'value' => $value] + $extra];
+    // Same event from the server (Conversions API), de-duplicated by event_id
+    capi_queue($fbEvent, $extra['event_id'], array_filter([
+        'currency'     => 'BDT',
+        'value'        => $value,
+        'content_ids'  => array_map(fn($i) => (string)$i['id'], $items),
+        'content_type' => 'product',
+        'contents'     => array_map(fn($i) => ['id' => (string)$i['id'], 'quantity' => 1, 'item_price' => (float)$i['price']], $items),
+        'num_items'    => count($items),
+        'order_id'     => $fbEvent === 'Purchase' ? $extra['event_id'] : null,
+    ], fn($v) => $v !== null));
     if ($later) {
         $_SESSION['track'][] = $ev;
     } else {
