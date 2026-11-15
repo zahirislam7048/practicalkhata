@@ -123,14 +123,19 @@ function owned_product_ids(int $userId): array
     ), 'product_id'));
 }
 
-function set_order_status(int $orderId, string $status, string $note = ''): void
+function set_order_status(int $orderId, string $status, string $note = '', ?float $dueAmount = null): void
 {
     $o = row('SELECT * FROM orders WHERE id = ?', [$orderId]);
-    if (!$o || $o['status'] === $status) {
+    if (!$o || !in_array($status, ['pending', 'paid', 'rejected', 'due'], true)) {
+        return;
+    }
+    if ($o['status'] === $status) {
+        q('UPDATE orders SET admin_note = ?, due_amount = ? WHERE id = ?', [$note ?: null, $status === 'due' ? $dueAmount : null, $orderId]);
         return;
     }
     db()->beginTransaction();
-    q('UPDATE orders SET status = ?, admin_note = ? WHERE id = ?', [$status, $note ?: null, $orderId]);
+    q('UPDATE orders SET status = ?, admin_note = ?, due_amount = ? WHERE id = ?',
+      [$status, $note ?: null, $status === 'due' ? $dueAmount : null, $orderId]);
     // A rejected order gives its coupon use back; re-approving takes it again.
     if ($o['coupon_id']) {
         if ($status === 'rejected') {
@@ -194,4 +199,39 @@ function shop_products(string $where = '1=1', array $params = [], string $order 
     return rows("SELECT p.*, (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
                  WHERE oi.product_id = p.id AND o.status = 'paid') AS sold
                  FROM products p WHERE p.is_active = 1 AND ($where) ORDER BY $order LIMIT $limit OFFSET $offset", $params);
+}
+
+/** Is this Transaction ID already used by any order (main TrxID or an extra due payment)? */
+function trx_used(string $method, string $trx): bool
+{
+    return (bool)val('SELECT id FROM orders WHERE (payment_method = ? AND trx_id = ?) OR payment_log LIKE ?',
+        [$method, $trx, '%TrxID ' . $trx . '%']);
+}
+
+/**
+ * Customer pays the remaining amount of a "Payment Due" order. Returns an error message or null.
+ */
+function submit_due_payment(array $o, string $method, string $sender, string $trx): ?string
+{
+    $sender = preg_replace('/\D+/', '', $sender);
+    $trx = strtoupper(preg_replace('/\s+/', '', $trx));
+    if ($o['status'] !== 'due') {
+        return 'এই অর্ডারে কোনো বাকি পেমেন্ট নেই।';
+    }
+    if (!in_array($method, ['bkash', 'nagad'], true) || setting($method . '_number') === '') {
+        return 'পেমেন্ট মাধ্যম বেছে নিন।';
+    }
+    if (!preg_match('/^01[3-9]\d{8}$/', $sender)) {
+        return 'যে নাম্বার থেকে টাকা পাঠিয়েছেন সেটি সঠিকভাবে লিখুন।';
+    }
+    if (!preg_match('/^[A-Z0-9]{6,30}$/', $trx)) {
+        return 'সঠিক Transaction ID লিখুন।';
+    }
+    if (trx_used($method, $trx)) {
+        return 'এই Transaction ID আগেই ব্যবহার করা হয়েছে।';
+    }
+    $line = date('d M Y h:i A') . ' — বাকি পেমেন্ট: ' . method_label($method) . ' · ' . $sender . ' · TrxID ' . $trx
+          . ($o['due_amount'] ? ' · ' . money($o['due_amount']) : '');
+    q("UPDATE orders SET status = 'pending', payment_log = CONCAT(COALESCE(payment_log, ''), ?, '\n') WHERE id = ?", [$line, $o['id']]);
+    return null;
 }

@@ -19,7 +19,7 @@ $active = ['order.php' => 'orders.php', 'product-edit.php' => 'products.php', 'c
 <meta name="robots" content="noindex">
 <title><?= e(($title ?? 'অ্যাডমিন') . ' | ' . setting('site_name', 'Practical Khata')) ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=4">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=5">
 </head>
 <body class="admin">
 <aside class="admin-side">

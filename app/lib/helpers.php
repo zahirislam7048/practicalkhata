@@ -121,8 +121,9 @@ function status_label(string $status): string
 {
     return [
         'pending'  => 'যাচাই চলছে',
-        'paid'     => 'পেমেন্ট সফল',
-        'rejected' => 'বাতিল',
+        'paid'     => 'Approved',
+        'rejected' => 'Declined',
+        'due'      => 'Payment Due',
     ][$status] ?? $status;
 }
 

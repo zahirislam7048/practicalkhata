@@ -21,3 +21,15 @@ document.addEventListener('submit', function (e) {
   var b = e.target.querySelector('button:not([name])');
   if (b) setTimeout(function () { b.disabled = true; }, 0);
 });
+// Admin orders list: quick status change (asks the due amount for "Payment Due")
+function pkQuickStatus(sel) {
+  var f = sel.form;
+  if (sel.value === 'due') {
+    var amt = prompt('কত টাকা বাকি? (যেমন 50)');
+    if (!amt || isNaN(parseFloat(amt))) { sel.value = sel.querySelector('option[selected]').value; return; }
+    f.querySelector('[name=due_amount]').value = amt;
+  } else if (sel.value === 'rejected' && !confirm('অর্ডারটি Decline করবেন?')) {
+    sel.value = sel.querySelector('option[selected]').value; return;
+  }
+  f.submit();
+}

@@ -5,6 +5,7 @@ require APP_DIR . '/views/admin_header.php';
 
 $stats = [
     'যাচাই বাকি'       => (int)val("SELECT COUNT(*) FROM orders WHERE status = 'pending'"),
+    'Payment Due'      => (int)val("SELECT COUNT(*) FROM orders WHERE status = 'due'"),
     'আজকের বিক্রি'     => money(val("SELECT COALESCE(SUM(total),0) FROM orders WHERE status = 'paid' AND DATE(created_at) = CURDATE()")),
     'এই মাসের বিক্রি'  => money(val("SELECT COALESCE(SUM(total),0) FROM orders WHERE status = 'paid' AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')")),
     'মোট বিক্রি'       => money(val("SELECT COALESCE(SUM(total),0) FROM orders WHERE status = 'paid'")),

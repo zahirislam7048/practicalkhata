@@ -45,6 +45,15 @@ function run_migrations(): void
                 q('UPDATE orders SET access_token = ? WHERE id = ?', [bin2hex(random_bytes(20)), $o['id']]);
             }
         },
+        3 => function () {
+            // "Payment Due" status: admin asks for the remaining amount, customer sends another TrxID
+            if (!val("SHOW COLUMNS FROM orders LIKE 'due_amount'")) {
+                db()->exec("ALTER TABLE orders
+                    MODIFY status ENUM('pending','paid','rejected','due') NOT NULL DEFAULT 'pending',
+                    ADD due_amount DECIMAL(10,2) NULL AFTER status,
+                    ADD payment_log TEXT NULL AFTER due_amount");
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

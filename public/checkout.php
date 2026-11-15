@@ -59,7 +59,7 @@ if (is_post()) {
         }
         if (!preg_match('/^[A-Z0-9]{6,30}$/', $trx)) {
             $errors[] = 'সঠিক Transaction ID লিখুন।';
-        } elseif (val('SELECT id FROM orders WHERE payment_method = ? AND trx_id = ?', [$method, $trx])) {
+        } elseif (trx_used($method, $trx)) {
             $errors[] = 'এই Transaction ID দিয়ে আগেই একটি অর্ডার করা হয়েছে।';
         }
     }

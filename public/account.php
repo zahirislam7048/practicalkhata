@@ -3,6 +3,14 @@ require __DIR__ . '/_init.php';
 
 $user = require_login();
 
+if (is_post() && input('action') === 'pay_due') {
+    csrf_check();
+    $dueOrder = row('SELECT * FROM orders WHERE id = ?', [(int)input('order_id')]);
+    $allowed = $dueOrder && ((int)$dueOrder['user_id'] === (int)$user['id']);
+    $err = $allowed ? submit_due_payment($dueOrder, input('method'), input('sender'), input('trx')) : 'অর্ডারটি পাওয়া যায়নি।';
+    flash($err ? 'error' : 'success', $err ?: 'বাকি পেমেন্ট জমা হয়েছে। যাচাই হলে ডাউনলোড চালু হবে।');
+    redirect('account.php');
+}
 if (is_post() && input('action') === 'profile') {
     csrf_check();
     $name = input('name');

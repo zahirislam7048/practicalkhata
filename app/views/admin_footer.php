@@ -1,4 +1,4 @@
 </main>
-<script src="<?= url('assets/js/app.js') ?>?v=1"></script>
+<script src="<?= url('assets/js/app.js') ?>?v=5"></script>
 </body>
 </html>

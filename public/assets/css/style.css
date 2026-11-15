@@ -398,3 +398,17 @@ body.admin { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh;
 .copy-row { display: flex; gap: 8px; margin: 8px 0; }
 .copy-row input { font-size: .85rem; background: #fff; }
 .copy-row .btn small { font-size: .9rem; color: #fff; }
+
+/* ---------- Order statuses ---------- */
+.status-due { background: #ffedd5; color: #9a3412; }
+.status-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.btn-approve { background: var(--ok); border-color: var(--ok); }
+.btn-approve:hover { background: #047857; border-color: #047857; }
+.btn-due { background: #f97316; border-color: #f97316; }
+.btn-due:hover { background: #ea580c; border-color: #ea580c; }
+.status-actions .btn:disabled { opacity: .35; cursor: not-allowed; }
+.quick-status select.status { width: auto; padding: 3px 26px 3px 10px; cursor: pointer; border: 0; font-size: .85rem; }
+.due-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 4px solid #f97316; border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.due-box b { color: #9a3412; }
+.due-form { margin-top: 8px; }
+@media (max-width: 520px) { .status-actions { grid-template-columns: 1fr; } }

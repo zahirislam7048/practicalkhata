@@ -14,6 +14,14 @@ if (!$o) {
     require APP_DIR . '/views/footer.php';
     exit;
 }
+if (is_post() && input('action') === 'pay_due') {
+    csrf_check();
+    $dueOrder = row('SELECT * FROM orders WHERE id = ?', [(int)input('order_id')]);
+    $allowed = $dueOrder && (hash_equals((string)$dueOrder['access_token'], $token) && (int)$dueOrder['id'] === (int)$o['id']);
+    $err = $allowed ? submit_due_payment($dueOrder, input('method'), input('sender'), input('trx')) : 'অর্ডারটি পাওয়া যায়নি।';
+    flash($err ? 'error' : 'success', $err ?: 'বাকি পেমেন্ট জমা হয়েছে। যাচাই হলে ডাউনলোড চালু হবে।');
+    redirect('order.php?t=' . $token);
+}
 $items = rows('SELECT oi.*, p.download_limit, p.file_path, p.slug FROM order_items oi
                LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?', [$o['id']]);
 $link = (isset($_SERVER['HTTP_HOST']) ? ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] : '') . url('order.php?t=' . $token);
@@ -29,6 +37,9 @@ require APP_DIR . '/views/header.php';
   <?php elseif ($o['status'] === 'pending'): ?>
     <h1>ধন্যবাদ<?= $o['guest_name'] ? ', ' . e($o['guest_name']) : '' ?>! অর্ডার জমা হয়েছে</h1>
     <p>আমরা আপনার পেমেন্ট যাচাই করছি। যাচাই হলে এই পেজেই ডাউনলোড বাটন চালু হবে — একটু পরে পেজটি রিফ্রেশ করুন।</p>
+  <?php elseif ($o['status'] === 'due'): ?>
+    <h1>⏳ পেমেন্ট বাকি আছে</h1>
+    <p>বাকি <?= money($o['due_amount'] ?? 0) ?> পাঠিয়ে নিচে নতুন Transaction ID দিন।</p>
   <?php else: ?>
     <h1>অর্ডারটি বাতিল হয়েছে</h1>
     <p>পেমেন্ট যাচাই করা যায়নি। প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।</p>

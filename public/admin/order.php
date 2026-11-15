@@ -8,10 +8,18 @@ if (is_post()) {
     $action = input('action');
     if ($action === 'approve') {
         set_order_status($id, 'paid', input('note'));
-        flash('success', 'অর্ডার অনুমোদিত — কাস্টমার এখন ডাউনলোড করতে পারবে।');
+        flash('success', 'Approved — কাস্টমার এখন ডাউনলোড করতে পারবে।');
     } elseif ($action === 'reject') {
         set_order_status($id, 'rejected', input('note'));
-        flash('info', 'অর্ডার বাতিল করা হয়েছে।');
+        flash('info', 'Declined — অর্ডার বাতিল করা হয়েছে।');
+    } elseif ($action === 'due') {
+        $due = input('due_amount');
+        if (!is_numeric($due) || (float)$due <= 0) {
+            flash('error', 'Payment Due দিতে কত টাকা বাকি সেটা লিখুন।');
+        } else {
+            set_order_status($id, 'due', input('note'), (float)$due);
+            flash('info', 'Payment Due — কাস্টমার বাকি ' . money($due) . ' পাঠিয়ে নতুন TrxID দিতে পারবে।');
+        }
     } elseif ($action === 'pending') {
         set_order_status($id, 'pending', input('note'));
         flash('info', 'অর্ডার আবার pending করা হয়েছে।');
@@ -43,17 +51,27 @@ require APP_DIR . '/views/admin_header.php';
       <dt>প্রেরকের নাম্বার</dt><dd><?= e($o['sender_number']) ?></dd>
       <?php endif; ?>
       <dt>পরিশোধযোগ্য</dt><dd><b><?= money($o['total']) ?></b></dd>
+      <?php if ($o['status'] === 'due'): ?><dt>বাকি</dt><dd><b class="danger"><?= money($o['due_amount']) ?></b></dd><?php endif; ?>
+      <?php if ($o['payment_log']): ?><dt>পরের পেমেন্ট</dt><dd class="small"><?= nl2br(e(trim($o['payment_log']))) ?></dd><?php endif; ?>
       <dt>সময়</dt><dd><?= e(date('d M Y, h:i A', strtotime($o['created_at']))) ?></dd>
     </dl>
     <p class="muted small">আপনার <?= e(method_label($o['payment_method'])) ?> অ্যাপে TrxID ও টাকার পরিমাণ মিলিয়ে নিন, তারপর অনুমোদন দিন।</p>
     <form method="post" class="form">
       <?= csrf_field() ?>
       <label>নোট (কাস্টমার দেখতে পাবে, ঐচ্ছিক)<input name="note" value="<?= e((string)$o['admin_note']) ?>"></label>
-      <div class="btn-row">
-        <?php if ($o['status'] !== 'paid'): ?><button class="btn" name="action" value="approve">✔ অনুমোদন দিন</button><?php endif; ?>
-        <?php if ($o['status'] !== 'rejected'): ?><button class="btn btn-danger" name="action" value="reject" data-confirm="অর্ডারটি বাতিল করবেন?">✕ বাতিল</button><?php endif; ?>
-        <?php if ($o['status'] !== 'pending'): ?><button class="btn btn-outline" name="action" value="pending">Pending করুন</button><?php endif; ?>
+      <label>বাকি টাকা (শুধু Payment Due এর জন্য)
+        <input name="due_amount" type="number" step="0.01" min="0" value="<?= e((string)($o['due_amount'] ?? '')) ?>" placeholder="যেমন 50"></label>
+      <div class="status-actions">
+        <button class="btn btn-approve" name="action" value="approve" <?= $o['status'] === 'paid' ? 'disabled' : '' ?>>✔ Approve</button>
+        <button class="btn btn-due" name="action" value="due">⏳ Payment Due</button>
+        <button class="btn btn-danger" name="action" value="reject" data-confirm="অর্ডারটি Decline করবেন?" <?= $o['status'] === 'rejected' ? 'disabled' : '' ?>>✕ Decline</button>
       </div>
+      <?php if ($o['status'] !== 'pending'): ?><button class="link-btn small" name="action" value="pending">↺ আবার "যাচাই চলছে" করুন</button><?php endif; ?>
+      <p class="muted small">
+        <b>Approve</b>: টাকা ঠিক আছে, ডাউনলোড চালু হবে ·
+        <b>Payment Due</b>: কম টাকা এসেছে — বাকি টাকা লিখুন, কাস্টমার আবার পাঠাবে ·
+        <b>Decline</b>: পেমেন্ট পাওয়া যায়নি / ভুল TrxID
+      </p>
     </form>
   </section>
   <section class="card">
