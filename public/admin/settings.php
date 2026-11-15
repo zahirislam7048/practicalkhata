@@ -37,7 +37,7 @@ require APP_DIR . '/views/admin_header.php';
       <?php if ($type === 'theme'): ?>
         <div class="theme-pick">
           <?php foreach (theme_presets() as $tk => $tp): ?>
-            <label class="theme-opt"><input type="radio" name="theme" value="<?= $tk ?>" <?= setting('theme', 'navy') === $tk ? 'checked' : '' ?>>
+            <label class="theme-opt"><input type="radio" name="theme" value="<?= $tk ?>" <?= setting('theme', 'green') === $tk ? 'checked' : '' ?>>
               <span class="sw" style="background:<?= $tp[1] ?>"></span><span class="sw" style="background:<?= $tp[5] ?>"></span> <?= e($tp[0]) ?></label>
           <?php endforeach; ?>
         </div>

@@ -76,6 +76,10 @@ function run_migrations(): void
                 q("UPDATE products SET category_id = ? WHERE title LIKE '%Instagram%' AND category_id IS NULL", [$ig]);
             }
         },
+        5 => function () {
+            // Owner chose green + yellow as the site colours
+            q("INSERT INTO settings (`key`, `value`) VALUES ('theme', 'green') ON DUPLICATE KEY UPDATE `value` = 'green'");
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

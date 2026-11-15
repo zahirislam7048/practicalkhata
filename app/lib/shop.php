@@ -267,22 +267,25 @@ function categories(): array
 function theme_presets(): array
 {
     return [
+        'green'  => ['সবুজ + হলুদ',      '#15803d', '#166534', '#dcfce7', '#f0fdf4', '#facc15', '#eab308', '#fef9c3', '#052e16'],
         'navy'   => ['নেভি ব্লু + কমলা', '#1e3a8a', '#172554', '#dbeafe', '#eff6ff', '#f97316', '#ea580c', '#ffedd5', '#0b1533'],
         'teal'   => ['টিল + কমলা',      '#0f766e', '#115e59', '#ccfbf1', '#f0fdfa', '#f59e0b', '#d97706', '#fef3c7', '#042f2e'],
         'purple' => ['বেগুনি + গোলাপি',  '#6d28d9', '#5b21b6', '#ede9fe', '#f5f3ff', '#ec4899', '#db2777', '#fce7f3', '#1e1038'],
         'red'    => ['লাল + হলুদ',       '#dc2626', '#b91c1c', '#fee2e2', '#fef2f2', '#facc15', '#eab308', '#fef9c3', '#2a0a0a'],
-        'green'  => ['সবুজ + হলুদ',      '#15803d', '#166534', '#dcfce7', '#f0fdf4', '#facc15', '#eab308', '#fef9c3', '#052e16'],
     ];
 }
 
 function theme_css(): string
 {
     $p = theme_presets();
-    $t = $p[setting('theme', 'navy')] ?? $p['navy'];
+    $t = $p[setting('theme', 'green')] ?? $p['green'];
     [, $brand, $dark, $soft, $b50, $acc, $accDark, $accSoft, $deep] = $t;
     // Text colour on the accent: dark for light accents (yellow), white otherwise
-    $onAccent = in_array($acc, ['#facc15'], true) ? $deep : '#ffffff';
-    return ":root{--brand:$brand;--brand-dark:$dark;--brand-soft:$soft;--brand-50:$b50;--accent:$acc;--accent-dark:$accDark;--accent-soft:$accSoft;--deep:$deep;--on-accent:$onAccent}";
+    $lightAccent = in_array($acc, ['#facc15'], true);
+    $onAccent = $lightAccent ? $deep : '#ffffff';
+    // Yellow text is hard to read on white, so prices use the dark brand colour with a yellow accent
+    $price = $lightAccent ? $dark : $accDark;
+    return ":root{--brand:$brand;--brand-dark:$dark;--brand-soft:$soft;--brand-50:$b50;--accent:$acc;--accent-dark:$accDark;--accent-soft:$accSoft;--deep:$deep;--on-accent:$onAccent;--price:$price}";
 }
 
 /** Flash sale end time (Unix) or 0 when no countdown is set / it is over. */

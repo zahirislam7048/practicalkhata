@@ -623,3 +623,31 @@ body.shop { background: var(--bg); }
 .up-bar { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
 .up-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--brand), var(--accent)); transition: width .2s; }
 .up-text { margin-top: 6px; }
+/* readable prices / labels for every colour preset */
+:root { --price: var(--accent-dark); }
+.pcard-price .now, .pd-price .now, .summary .total, .hp-price { color: var(--price); }
+.flash .block-head h2, .catnav a.hot { color: var(--price); }
+.flash-tag { color: var(--price); }
+.promo.p1 b, .promo.p1 span { color: var(--on-accent); }
+/* slider: room for arrows, never cut the button */
+.slider { min-height: 300px; }
+.auto-slide { padding: 24px 60px; }
+.as-text h2 { font-size: 1.55rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.as-text p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.as-price { margin-bottom: 10px; }
+.auto-slide img { max-height: 250px; width: auto; justify-self: center; }
+.countdown [data-d-wrap] { display: inline-flex; align-items: center; gap: 4px; margin-right: 4px; }
+@media (max-width: 860px) {
+  .slider { min-height: 0; }
+  .auto-slide { padding: 18px 48px; grid-template-columns: 1fr 96px; }
+  .as-text h2 { font-size: 1.1rem; }
+  .auto-slide img { max-height: 110px; }
+  .flash .block-head { row-gap: 8px; }
+}
+.home-top > * { min-width: 0; }
+.auto-slide { min-width: 0; }
+.as-text { min-width: 0; }
+@media (max-width: 860px) { .as-text p { display: none; } .auto-slide img { max-height: 96px; } }
+/* fixed-height slider: aspect-ratio + min-height was widening it into the promo column */
+.slider { aspect-ratio: auto; height: 323px; min-height: 0; }
+@media (max-width: 860px) { .slider { height: auto; } .slide > img { height: auto; aspect-ratio: 1200/450; } }

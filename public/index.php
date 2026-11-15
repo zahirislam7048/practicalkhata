@@ -109,7 +109,7 @@ require APP_DIR . '/views/header.php';
   <div class="block-head">
     <h2>⚡ ফ্ল্যাশ সেল</h2>
     <?php if ($flashEnd): ?>
-      <div class="countdown" data-end="<?= $flashEnd * 1000 ?>"><small>শেষ হবে</small><b data-h>00</b>:<b data-m>00</b>:<b data-s>00</b></div>
+      <div class="countdown" data-end="<?= $flashEnd * 1000 ?>"><small>শেষ হবে</small><span data-d-wrap hidden><b data-d>0</b> দিন</span><b data-h>00</b>:<b data-m>00</b>:<b data-s>00</b></div>
     <?php else: ?>
       <span class="flash-tag">সীমিত সময়ের অফার</span>
     <?php endif; ?>

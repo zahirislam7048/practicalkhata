@@ -57,7 +57,9 @@ document.querySelectorAll('.countdown[data-end]').forEach(function (c) {
   var pad = function (v) { return bn(v < 10 ? '0' + v : v); };
   (function tick() {
     var s = Math.max(0, Math.floor((end - Date.now()) / 1000));
-    c.querySelector('[data-h]').textContent = pad(Math.floor(s / 3600));
+    var days = Math.floor(s / 86400), dw = c.querySelector('[data-d-wrap]');
+    if (dw) { dw.hidden = days < 1; c.querySelector('[data-d]').textContent = bn(days); }
+    c.querySelector('[data-h]').textContent = pad(Math.floor(s / 3600) % 24);
     c.querySelector('[data-m]').textContent = pad(Math.floor(s / 60) % 60);
     c.querySelector('[data-s]').textContent = pad(s % 60);
     if (s > 0) setTimeout(tick, 1000);
