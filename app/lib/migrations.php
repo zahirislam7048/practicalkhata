@@ -80,6 +80,35 @@ function run_migrations(): void
             // Owner chose green + yellow as the site colours
             q("INSERT INTO settings (`key`, `value`) VALUES ('theme', 'green') ON DUPLICATE KEY UPDATE `value` = 'green'");
         },
+        6 => function () {
+            // New product (draft): admin sets price + uploads the file, then turns it on
+            $catId = val('SELECT id FROM categories WHERE slug = ?', [slugify('টাকা-পয়সা ও বিনিয়োগ')]);
+            if (!$catId) {
+                q('INSERT INTO categories (name, slug, icon, sort_order) VALUES (?,?,?,?)',
+                  ['টাকা-পয়সা ও বিনিয়োগ', slugify('টাকা-পয়সা ও বিনিয়োগ'), '💰', 1]);
+                $catId = (int)db()->lastInsertId();
+            }
+            if (!val('SELECT id FROM products WHERE title = ?', ['বেতনের টাকায় সঞ্চয় ও বিনিয়োগ'])) {
+                q('INSERT INTO products (title, slug, category_id, short_desc, description, price, image, download_limit, is_active)
+                   VALUES (?,?,?,?,?,?,?,?,0)', [
+                    'বেতনের টাকায় সঞ্চয় ও বিনিয়োগ',
+                    unique_slug('beton-er-takay-sanchay-o-biniyog'),
+                    $catId,
+                    'মাসের বেতন থেকে কীভাবে নিয়মিত সঞ্চয় করবেন ও ধাপে ধাপে বিনিয়োগ শুরু করবেন — সহজ বাংলায় প্র্যাকটিক্যাল গাইড।',
+                    "চাকরির বেতন আসে, মাস শেষে কিছুই থাকে না? এই গাইডে সহজ বাংলায় ধাপে ধাপে দেখানো হয়েছে কীভাবে বেতনের টাকা থেকে নিয়মিত সঞ্চয় করে বিনিয়োগ শুরু করবেন।\n\n"
+                    . "যা পাবেন:\n"
+                    . "• মাসিক বাজেট বানানোর সহজ পদ্ধতি\n"
+                    . "• বেতনের কত অংশ খরচ, সঞ্চয় ও বিনিয়োগে যাবে — তার হিসাব\n"
+                    . "• জরুরি তহবিল (ইমার্জেন্সি ফান্ড) গড়ার উপায়\n"
+                    . "• সঞ্চয়পত্র, DPS, FDR ও অন্যান্য বিকল্পের তুলনা\n"
+                    . "• নিজের হিসাব রাখার জন্য প্র্যাকটিক্যাল খাতা\n\n"
+                    . "কেনার পর অর্ডারের পেজ বা অ্যাকাউন্ট থেকে ফাইলটি ডাউনলোড করতে পারবেন।",
+                    0,
+                    'assets/img/sanchay-biniyog-cover.jpg',
+                    5,
+                ]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

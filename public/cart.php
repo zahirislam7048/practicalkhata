@@ -12,8 +12,8 @@ if (is_post()) {
                 track_event('AddToCart', 'add_to_cart', track_items([$added]), product_price($added), [], true);
             }
             cart_add($id);
-            if (input('go') !== 'checkout') {
-                flash('success', 'কার্টে যোগ হয়েছে।');
+            if (input('go') !== 'checkout' || input('upsell')) {
+                flash('success', '“' . $added['title'] . '” কার্টে যোগ হয়েছে।');
             }
         }
     } elseif ($action === 'remove') {
@@ -43,8 +43,10 @@ require APP_DIR . '/views/header.php';
 <h1>আপনার কার্ট <small class="muted">(<?= bn(count($items)) ?>টি পণ্য)</small></h1>
 <?php if (!$items): ?>
   <div class="empty"><?= icon('cart', 44) ?><p>আপনার কার্ট খালি।</p><a class="btn" href="<?= url() ?>">কেনাকাটা শুরু করুন</a></div>
+  <?php $returnTo = 'cart'; require APP_DIR . '/views/upsell.php'; ?>
 <?php else: ?>
 <div class="checkout-grid">
+  <div>
   <div class="card">
     <table class="table">
       <?php foreach ($items as $it): ?>
@@ -62,6 +64,8 @@ require APP_DIR . '/views/header.php';
       </tr>
       <?php endforeach; ?>
     </table>
+  </div>
+  <?php $returnTo = 'cart'; require APP_DIR . '/views/upsell.php'; ?>
   </div>
   <aside class="card summary">
     <h3>সারসংক্ষেপ</h3>

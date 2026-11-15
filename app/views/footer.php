@@ -51,6 +51,6 @@
   <a href="<?= url(current_user() ? 'account.php' : 'track.php') ?>"><?= icon('download', 22) ?><span>ডাউনলোড</span></a>
 </nav>
 <?php require __DIR__ . '/tracking_events.php'; ?>
-<script src="<?= url('assets/js/app.js') ?>?v=9"></script>
+<script src="<?= url('assets/js/app.js') ?>?v=12"></script>
 </body>
 </html>

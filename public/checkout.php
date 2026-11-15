@@ -117,7 +117,7 @@ require APP_DIR . '/views/header.php';
 <h1>চেকআউট</h1>
 <?php foreach ($errors as $err): ?><div class="alert alert-error"><?= e($err) ?></div><?php endforeach; ?>
 <div class="checkout-grid">
-  <form method="post" class="card form">
+  <form method="post" class="card form" data-remember="checkout">
     <?= csrf_field() ?>
     <?php $g = $_SESSION['guest'] ?? []; if (!$user): ?>
       <div class="guest-box">
@@ -162,10 +162,22 @@ require APP_DIR . '/views/header.php';
       <button class="btn btn-accent btn-lg btn-block"><?= icon('lock', 18) ?> <?= $isFree ? 'অর্ডার সম্পন্ন করুন' : 'অর্ডার জমা দিন' ?></button>
     <?php endif; ?>
   </form>
+  <div class="side-col">
   <aside class="card summary">
-    <h3>অর্ডার সারসংক্ষেপ</h3>
+    <h3>অর্ডার সারসংক্ষেপ <small class="muted">(<?= bn(count($items)) ?>টি পণ্য)</small></h3>
     <?php foreach ($items as $it): ?>
-      <div class="sum-row"><span><?= e($it['title']) ?></span><span><?= money(product_price($it)) ?></span></div>
+      <div class="sum-row sum-item">
+        <img src="<?= e(product_image($it, 'thumb')) ?>" alt="" width="44" height="44">
+        <span><?= e($it['title']) ?></span>
+        <span class="num"><?= money(product_price($it)) ?>
+          <?php if (count($items) > 1): ?>
+          <form method="post" action="<?= url('cart.php') ?>" class="inline"><?= csrf_field() ?>
+            <input type="hidden" name="action" value="remove"><input type="hidden" name="id" value="<?= (int)$it['id'] ?>"><input type="hidden" name="go" value="checkout">
+            <button class="link-btn danger" title="সরান" aria-label="সরান">✕</button>
+          </form>
+          <?php endif; ?>
+        </span>
+      </div>
     <?php endforeach; ?>
     <hr>
     <div class="sum-row"><span>সাবটোটাল</span><span><?= money($t['subtotal']) ?></span></div>
@@ -175,5 +187,7 @@ require APP_DIR . '/views/header.php';
     <div class="sum-row total"><span>মোট</span><span><?= money($t['total']) ?></span></div>
     <a href="<?= url('cart.php') ?>" class="small">← কার্টে ফিরে যান</a>
   </aside>
+  <?php $returnTo = 'checkout'; require APP_DIR . '/views/upsell.php'; ?>
+  </div>
 </div>
 <?php require APP_DIR . '/views/footer.php';

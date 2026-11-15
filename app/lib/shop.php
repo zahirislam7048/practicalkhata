@@ -294,3 +294,15 @@ function flash_sale_end(): int
     $t = strtotime(setting('flash_sale_end'));
     return ($t && $t > time()) ? $t : 0;
 }
+
+/** "You may also like" on cart/checkout: active products not in the cart and not already bought. */
+function upsell_products(int $limit = 4): array
+{
+    $skip = cart_ids();
+    if ($u = current_user()) {
+        $skip = array_merge($skip, owned_product_ids((int)$u['id']));
+    }
+    $skip = array_values(array_unique(array_map('intval', $skip))) ?: [0];
+    $in = implode(',', array_fill(0, count($skip), '?'));
+    return shop_products("p.id NOT IN ($in)", $skip, '(p.sale_price IS NOT NULL AND p.sale_price < p.price) DESC, sold DESC, p.created_at DESC', $limit);
+}

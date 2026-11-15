@@ -102,3 +102,18 @@ document.querySelectorAll('form[data-upload-progress]').forEach(function (form) 
     xhr.send(new FormData(form));
   });
 });
+
+// Checkout: keep what the customer typed if they add/remove an item (page reloads)
+document.querySelectorAll('form[data-remember]').forEach(function (f) {
+  var key = 'pk_form_' + f.getAttribute('data-remember');
+  var saved = {}; try { saved = JSON.parse(sessionStorage.getItem(key) || '{}'); } catch (e) {}
+  f.querySelectorAll('input[name]:not([type=hidden]):not([type=radio]), textarea[name]').forEach(function (el) {
+    if (!el.value && saved[el.name]) el.value = saved[el.name];
+    el.addEventListener('input', function () { saved[el.name] = el.value; sessionStorage.setItem(key, JSON.stringify(saved)); });
+  });
+  f.querySelectorAll('input[type=radio][name]').forEach(function (el) {
+    if (saved[el.name] && el.value === saved[el.name]) el.checked = true;
+    el.addEventListener('change', function () { saved[el.name] = el.value; sessionStorage.setItem(key, JSON.stringify(saved)); });
+  });
+  f.addEventListener('submit', function () { setTimeout(function () { sessionStorage.removeItem(key); }, 0); });
+});
