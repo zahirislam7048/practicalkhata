@@ -109,6 +109,12 @@ function run_migrations(): void
                 ]);
             }
         },
+        7 => function () {
+            // Download-link email after approval
+            if (!val("SHOW COLUMNS FROM orders LIKE 'email_sent_at'")) {
+                db()->exec("ALTER TABLE orders ADD email_sent_at DATETIME NULL, ADD email_error VARCHAR(255) NULL");
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

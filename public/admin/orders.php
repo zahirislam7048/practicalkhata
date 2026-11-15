@@ -9,8 +9,11 @@ if (is_post()) {
         flash('error', 'Payment Due দিতে বাকি টাকার পরিমাণ লিখুন।');
     } else {
         $cur = row('SELECT admin_note FROM orders WHERE id = ?', [(int)input('id')]);
-        set_order_status((int)input('id'), $st, (string)($cur['admin_note'] ?? ''), $st === 'due' ? (float)$due : null);
+        $mailMsg = set_order_status((int)input('id'), $st, (string)($cur['admin_note'] ?? ''), $st === 'due' ? (float)$due : null);
         flash('success', 'স্ট্যাটাস বদলানো হয়েছে: ' . status_label($st));
+        if ($mailMsg) {
+            flash(str_starts_with($mailMsg, 'ডাউনলোড লিংক ইমেইলে') ? 'success' : 'info', $mailMsg);
+        }
     }
     redirect('admin/orders.php?' . http_build_query(array_intersect_key($_GET, ['status' => 1, 's' => 1, 'page' => 1])));
 }
@@ -50,7 +53,8 @@ $orders = rows("SELECT o.*, COALESCE(u.name, o.guest_name) AS name, COALESCE(u.e
   <tr>
     <td><a href="order.php?id=<?= (int)$o['id'] ?>">#<?= e($o['order_no']) ?></a></td>
     <td class="small"><?= e(date('d M y, h:i A', strtotime($o['created_at']))) ?></td>
-    <td><?= e($o['name']) ?><?php if (!$o['user_id']): ?> <span class="badge">গেস্ট</span><?php endif; ?><div class="muted small"><?= e((string)$o['email']) ?></div></td>
+    <td><?= e($o['name']) ?><?php if (!$o['user_id']): ?> <span class="badge">গেস্ট</span><?php endif; ?><div class="muted small"><?= e((string)$o['email']) ?></div>
+      <?php if ($o['status'] === 'paid'): ?><div class="small"><?= $o['email_sent_at'] ? '<span class="success">✉️ লিংক পাঠানো হয়েছে</span>' : ($o['email_error'] ? '<span class="danger">✉️ ইমেইল যায়নি</span>' : '<span class="muted">✉️ ইমেইল নেই — WhatsApp করুন</span>') ?></div><?php endif; ?></td>
     <td class="small"><?= e(method_label($o['payment_method'])) ?><?php if ($o['trx_id']): ?><div><code><?= e($o['trx_id']) ?></code> · <?= e($o['sender_number']) ?></div><?php endif; ?></td>
     <td class="num"><?= money($o['total']) ?></td>
     <td>

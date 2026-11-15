@@ -7,8 +7,14 @@ if (is_post()) {
     csrf_check();
     $action = input('action');
     if ($action === 'approve') {
-        set_order_status($id, 'paid', input('note'));
+        $mailMsg = set_order_status($id, 'paid', input('note'));
         flash('success', 'Approved — কাস্টমার এখন ডাউনলোড করতে পারবে।');
+        if ($mailMsg) {
+            flash(str_starts_with($mailMsg, 'ডাউনলোড লিংক ইমেইলে') ? 'success' : 'info', $mailMsg);
+        }
+    } elseif ($action === 'resend_email') {
+        $err = send_download_email($id);
+        flash($err ? 'error' : 'success', $err ? 'ইমেইল যায়নি: ' . $err : 'ডাউনলোড লিংক আবার ইমেইলে পাঠানো হয়েছে।');
     } elseif ($action === 'reject') {
         set_order_status($id, 'rejected', input('note'));
         flash('info', 'Declined — অর্ডার বাতিল করা হয়েছে।');
@@ -81,6 +87,28 @@ require APP_DIR . '/views/admin_header.php';
       <dt>ইমেইল</dt><dd><?= e($o['email']) ?></dd>
       <dt>মোবাইল</dt><dd><?= e((string)$o['phone']) ?></dd>
     </dl>
+    <h3>ডাউনলোড লিংক পাঠানো</h3>
+    <?php $oFull = row('SELECT * FROM orders WHERE id = ?', [$id]); $custEmail = order_email($oFull); $link = order_link($oFull); ?>
+    <div class="send-box">
+      <?php if ($custEmail): ?>
+        <div>✉️ <b><?= e($custEmail) ?></b></div>
+        <?php if ($oFull['email_sent_at']): ?>
+          <div class="success small">✓ ইমেইল পাঠানো হয়েছে — <?= e(date('d M Y, h:i A', strtotime($oFull['email_sent_at']))) ?></div>
+        <?php elseif ($oFull['email_error']): ?>
+          <div class="danger small">✕ ইমেইল যায়নি: <?= e($oFull['email_error']) ?></div>
+        <?php elseif ($o['status'] !== 'paid'): ?>
+          <div class="muted small">Approve করলে নিজে থেকেই ডাউনলোড লিংক এই ইমেইলে চলে যাবে।</div>
+        <?php endif; ?>
+        <?php if ($o['status'] === 'paid'): ?>
+          <form method="post" class="inline"><?= csrf_field() ?><button class="btn btn-outline btn-sm" name="action" value="resend_email">✉️ <?= $oFull['email_sent_at'] ? 'আবার ইমেইল পাঠান' : 'ইমেইল পাঠান' ?></button></form>
+        <?php endif; ?>
+      <?php else: ?>
+        <div class="muted small">কাস্টমার ইমেইল দেননি — নিচের লিংক কপি করে বা WhatsApp এ পাঠান।</div>
+      <?php endif; ?>
+      <div class="copy-row"><input readonly value="<?= e($link) ?>" onclick="this.select()"><button type="button" class="btn btn-sm" data-copy="<?= e($link) ?>"><small>কপি</small></button></div>
+      <?php if ($o['status'] !== 'paid'): ?><p class="muted small">⚠️ Approve না করা পর্যন্ত এই লিংকে ডাউনলোড বাটন আসবে না।</p><?php endif; ?>
+      <a class="btn btn-wa btn-sm" href="<?= e(order_whatsapp_link($oFull)) ?>" target="_blank" rel="noopener">WhatsApp এ লিংক পাঠান</a>
+    </div>
     <h3>পণ্য</h3>
     <table class="table">
       <?php foreach ($items as $it): ?>

@@ -123,15 +123,19 @@ function owned_product_ids(int $userId): array
     ), 'product_id'));
 }
 
-function set_order_status(int $orderId, string $status, string $note = '', ?float $dueAmount = null): void
+/**
+ * Change an order's status. When it becomes Approved, the download link is emailed to the customer.
+ * Returns a short message about that email (or null when no email was attempted).
+ */
+function set_order_status(int $orderId, string $status, string $note = '', ?float $dueAmount = null): ?string
 {
     $o = row('SELECT * FROM orders WHERE id = ?', [$orderId]);
     if (!$o || !in_array($status, ['pending', 'paid', 'rejected', 'due'], true)) {
-        return;
+        return null;
     }
     if ($o['status'] === $status) {
         q('UPDATE orders SET admin_note = ?, due_amount = ? WHERE id = ?', [$note ?: null, $status === 'due' ? $dueAmount : null, $orderId]);
-        return;
+        return null;
     }
     db()->beginTransaction();
     q('UPDATE orders SET status = ?, admin_note = ?, due_amount = ? WHERE id = ?',
@@ -145,6 +149,15 @@ function set_order_status(int $orderId, string $status, string $note = '', ?floa
         }
     }
     db()->commit();
+
+    if ($status === 'paid') {
+        if (order_email($o) === '') {
+            return 'কাস্টমার ইমেইল দেননি — অর্ডারের পেজ থেকে WhatsApp এ লিংক পাঠান।';
+        }
+        $err = send_download_email($orderId);
+        return $err ? 'ইমেইল যায়নি: ' . $err : 'ডাউনলোড লিংক ইমেইলে পাঠানো হয়েছে (' . order_email($o) . ')।';
+    }
+    return null;
 }
 
 /* ---------- Tracking (Meta Pixel + GTM dataLayer) ---------- */

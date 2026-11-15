@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS orders (
   status ENUM('pending','paid','rejected','due') NOT NULL DEFAULT 'pending',
   due_amount DECIMAL(10,2) NULL,
   payment_log TEXT NULL,
+  email_sent_at DATETIME NULL,
+  email_error VARCHAR(255) NULL,
   admin_note VARCHAR(500) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

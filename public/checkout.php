@@ -92,6 +92,12 @@ if (is_post()) {
             throw $ex;
         }
         cart_clear();
+        if ($isFree) {
+            register_shutdown_function(function () use ($orderId) {
+                finish_response_early();
+                send_download_email($orderId);
+            });
+        }
         track_event('Purchase', 'purchase', track_items($items), (float)$t['total'],
             ['event_id' => $orderNo, 'coupon' => $t['coupon']['code'] ?? null], true);
         flash('success', $isFree

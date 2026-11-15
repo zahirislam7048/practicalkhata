@@ -15,6 +15,12 @@ $fields = [
     'whatsapp_number' => ['WhatsApp নাম্বার (দিলে সাইটে WhatsApp বাটন দেখাবে)', 'text'],
     'contact_email' => ['যোগাযোগ ইমেইল', 'text'],
     'facebook_url'  => ['Facebook পেজ লিংক', 'text'],
+    'mail_from_name' => ['ইমেইলে প্রেরকের নাম (যেমন Practical Khata)', 'text'],
+    'mail_from_email' => ['প্রেরকের ইমেইল (যেমন support@practicalkhata.com)', 'text'],
+    'smtp_host'     => ['SMTP সার্ভার (cPanel: mail.practicalkhata.com)', 'text'],
+    'smtp_port'     => ['SMTP পোর্ট (465 অথবা 587)', 'text'],
+    'smtp_user'     => ['SMTP ইউজার (পুরো ইমেইল ঠিকানা)', 'text'],
+    'smtp_pass'     => ['SMTP পাসওয়ার্ড (ওই ইমেইল একাউন্টের পাসওয়ার্ড)', 'password'],
     'pixel_id'      => ['Meta Pixel ID', 'text'],
     'capi_token'    => ['Conversions API Access Token (সার্ভার সাইড ট্র্যাকিং)', 'password'],
     'capi_test_code' => ['Test Event Code (শুধু টেস্টের সময়, পরে খালি করুন)', 'text'],
@@ -22,6 +28,13 @@ $fields = [
     'ga4_api_secret' => ['GA4 Measurement Protocol API Secret (সার্ভার সাইড Purchase)', 'password'],
     'ga4_debug'     => ['GA4 Debug মোড — টেস্টের সময় চালু করুন, পরে বন্ধ করুন', 'checkbox'],
 ];
+if (is_post() && input('action') === 'test_email') {
+    csrf_check();
+    $err = send_mail(input('test_to'), 'টেস্ট ইমেইল — ' . setting('site_name', 'Practical Khata'),
+        '<p>এটি একটি টেস্ট ইমেইল। এটি পেয়ে থাকলে অর্ডার Approve করলে কাস্টমারের কাছেও ডাউনলোড লিংক পৌঁছাবে। ✅</p>');
+    flash($err ? 'error' : 'success', $err ? 'টেস্ট ইমেইল যায়নি: ' . $err : 'টেস্ট ইমেইল পাঠানো হয়েছে — ইনবক্স (আর Spam ফোল্ডার) দেখুন।');
+    redirect('admin/settings.php#email');
+}
 if (is_post()) {
     csrf_check();
     foreach (array_keys($fields) as $k) {
@@ -56,6 +69,14 @@ require APP_DIR . '/views/admin_header.php';
     </label>
   <?php endforeach; ?>
   <button class="btn">সেভ করুন</button>
+</form>
+<form method="post" class="card narrow form" id="email">
+  <h3>✉️ ইমেইল পাঠানো (ডাউনলোড লিংক)</h3>
+  <p class="small">অর্ডার Approve করলে কাস্টমারের ইমেইলে ডাউনলোড লিংক যায়। এখন:
+    <b><?= setting('smtp_host') && setting('smtp_user') ? 'SMTP (' . e(setting('smtp_user')) . ')' : 'সাধারণ PHP mail — Spam এ যেতে পারে, SMTP দেওয়া ভালো' ?></b></p>
+  <p class="muted small">SMTP তথ্য পাবেন: cPanel → <b>Email Accounts</b> → একটি ইমেইল বানান (যেমন support@practicalkhata.com) → <b>Connect Devices</b> → "Secure SSL/TLS Settings" (সাধারণত সার্ভার mail.practicalkhata.com, পোর্ট 465)।</p>
+  <?= csrf_field() ?><input type="hidden" name="action" value="test_email">
+  <div class="copy-row"><input type="email" name="test_to" placeholder="টেস্ট ইমেইল যাবে যে ঠিকানায়" value="<?= e(setting('contact_email')) ?>" required><button class="btn btn-sm">টেস্ট পাঠান</button></div>
 </form>
 <div class="card narrow">
   <h3>সার্ভার সাইড ট্র্যাকিং (Meta Conversions API)</h3>

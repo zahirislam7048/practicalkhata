@@ -20,7 +20,7 @@ $curCat = (string)($_GET['cat'] ?? '');
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap"></noscript>
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=12">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=13">
 <style><?= theme_css() ?></style>
 <?php require __DIR__ . '/tracking_head.php'; ?>
 <link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
