@@ -651,3 +651,5 @@ body.shop { background: var(--bg); }
 /* fixed-height slider: aspect-ratio + min-height was widening it into the promo column */
 .slider { aspect-ratio: auto; height: 323px; min-height: 0; }
 @media (max-width: 860px) { .slider { height: auto; } .slide > img { height: auto; aspect-ratio: 1200/450; } }
+.track-hints { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: -4px 0 16px; }
+.track-hints span { background: var(--brand-50); color: var(--brand-dark); border: 1px solid var(--brand-soft); border-radius: 999px; padding: 2px 10px; font-size: .8rem; }

@@ -47,7 +47,7 @@ require APP_DIR . '/views/header.php';
   <div class="save-link">
     <b><?= icon('lock', 16) ?> এই লিংকটি সেভ করে রাখুন</b> — এটি দিয়েই পরে আবার ডাউনলোড করতে পারবেন:
     <div class="copy-row"><input readonly value="<?= e($link) ?>" onclick="this.select()"><button type="button" class="btn btn-sm" data-copy="<?= e($link) ?>"><small>কপি</small></button></div>
-    <p class="muted small">লিংক হারালে <a href="<?= url('track.php') ?>">অর্ডার ট্র্যাক</a> পেজে অর্ডার নম্বর (#<?= e($o['order_no']) ?>) ও মোবাইল নাম্বার দিয়ে খুঁজে পাবেন।</p>
+    <p class="muted small">লিংক হারালে <a href="<?= url('track.php') ?>">অর্ডার ট্র্যাক</a> পেজে অর্ডার নম্বর (#<?= e($o['order_no']) ?>), মোবাইল নাম্বার বা ইমেইল দিয়ে খুঁজে পাবেন।</p>
   </div>
 </div>
 <?php require APP_DIR . '/views/order_card.php'; ?>
