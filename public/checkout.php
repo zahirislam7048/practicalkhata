@@ -72,11 +72,17 @@ if (is_post()) {
             throw $ex;
         }
         cart_clear();
+        track_event('Purchase', 'purchase', track_items($items), (float)$t['total'],
+            ['event_id' => $orderNo, 'coupon' => $t['coupon']['code'] ?? null], true);
         flash('success', $isFree
             ? 'অর্ডার সম্পন্ন! এখনই ডাউনলোড করতে পারবেন।'
             : 'অর্ডার #' . $orderNo . ' জমা হয়েছে। পেমেন্ট যাচাই হলে ডাউনলোড চালু হবে।');
         redirect('account.php');
     }
+}
+
+if (!is_post()) {
+    track_event('InitiateCheckout', 'begin_checkout', track_items($items), (float)$t['total']);
 }
 
 $title = 'চেকআউট';

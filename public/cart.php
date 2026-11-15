@@ -6,7 +6,11 @@ if (is_post()) {
     $action = input('action');
     $id = (int)input('id');
     if ($action === 'add' && $id) {
-        if (val('SELECT id FROM products WHERE id = ? AND is_active = 1', [$id])) {
+        $added = row('SELECT * FROM products WHERE id = ? AND is_active = 1', [$id]);
+        if ($added) {
+            if (!in_array($id, cart_ids(), true)) {
+                track_event('AddToCart', 'add_to_cart', track_items([$added]), product_price($added), [], true);
+            }
             cart_add($id);
             if (input('go') !== 'checkout') {
                 flash('success', 'কার্টে যোগ হয়েছে।');

@@ -13,6 +13,7 @@
     <div class="muted">© <?= date('Y') ?> <?= e(setting('site_name', 'Practical Khata')) ?></div>
   </div>
 </footer>
+<?php require __DIR__ . '/tracking_events.php'; ?>
 <script src="<?= url('assets/js/app.js') ?>?v=1"></script>
 </body>
 </html>

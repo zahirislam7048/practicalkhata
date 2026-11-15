@@ -14,6 +14,8 @@ $price = product_price($prod);
 $inCart = in_array((int)$prod['id'], cart_ids(), true);
 $owned = current_user() && in_array((int)$prod['id'], owned_product_ids((int)current_user()['id']), true);
 
+track_event('ViewContent', 'view_item', track_items([$prod]), $price);
+
 $title = $prod['title'];
 $metaDesc = $prod['short_desc'] ?: mb_substr(strip_tags((string)$prod['description']), 0, 160);
 require APP_DIR . '/views/header.php';

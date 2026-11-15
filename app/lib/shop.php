@@ -141,3 +141,24 @@ function set_order_status(int $orderId, string $status, string $note = ''): void
     }
     db()->commit();
 }
+
+/* ---------- Tracking (Meta Pixel + GTM dataLayer) ---------- */
+
+/**
+ * Queue an ecommerce event. $later = true keeps it in the session so it still fires after a redirect.
+ * $items: list of ['id','title','price'].
+ */
+function track_event(string $fbEvent, string $gaEvent, array $items, float $value, array $extra = [], bool $later = false): void
+{
+    $ev = [$fbEvent, $gaEvent, ['items' => $items, 'value' => $value] + $extra];
+    if ($later) {
+        $_SESSION['track'][] = $ev;
+    } else {
+        $GLOBALS['track_now'][] = $ev;
+    }
+}
+
+function track_items(array $products): array
+{
+    return array_map(fn($p) => ['id' => (int)$p['id'], 'title' => $p['title'], 'price' => product_price($p)], $products);
+}
