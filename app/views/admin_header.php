@@ -1,5 +1,6 @@
 <?php
 $admin = require_admin();
+run_migrations();
 $current = basename($_SERVER['SCRIPT_NAME']);
 $pendingCount = (int)val("SELECT COUNT(*) FROM orders WHERE status = 'pending'");
 $menu = [

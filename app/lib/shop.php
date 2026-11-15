@@ -162,3 +162,23 @@ function track_items(array $products): array
 {
     return array_map(fn($p) => ['id' => (int)$p['id'], 'title' => $p['title'], 'price' => product_price($p)], $products);
 }
+
+/** Customer info for GTM/Pixel. Visitors who aren't logged in get the default name "Guest". */
+function tracking_customer(): array
+{
+    $u = current_user();
+    $phone = preg_replace('/\D+/', '', (string)($u['phone'] ?? ''));
+    if (str_starts_with($phone, '01')) {
+        $phone = '88' . $phone; // 01XXXXXXXXX → 8801XXXXXXXXX (country code for Meta matching)
+    }
+    $parts = preg_split('/\s+/u', trim((string)($u['name'] ?? '')), 2);
+    return [
+        'logged_in' => (bool)$u,
+        'id'        => $u ? (string)$u['id'] : '',
+        'name'      => $u ? $u['name'] : 'Guest',
+        'first'     => $u ? mb_strtolower($parts[0]) : '',
+        'last'      => $u ? mb_strtolower($parts[1] ?? '') : '',
+        'email'     => $u ? mb_strtolower($u['email']) : '',
+        'phone'     => $phone,
+    ];
+}

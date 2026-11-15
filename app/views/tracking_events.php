@@ -24,6 +24,12 @@ dataLayer.push(<?= json_encode(array_filter([
         'coupon'         => $data['coupon'] ?? null,
         'items'          => $items,
     ], fn($v) => $v !== null),
+    'customer'  => [
+        'id'    => $pkCustomer['id'],
+        'name'  => $pkCustomer['name'],
+        'email' => $pkCustomer['email'],
+        'phone' => $pkCustomer['phone'],
+    ],
 ]), JSON_UNESCAPED_UNICODE) ?>);
 <?php endforeach; ?>
 </script>

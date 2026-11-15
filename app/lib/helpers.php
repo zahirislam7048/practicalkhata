@@ -110,7 +110,11 @@ function product_price(array $p): float
 
 function product_image(array $p): string
 {
-    return $p['image'] ? url('uploads/' . $p['image']) : url('assets/img/placeholder.svg');
+    if (!$p['image']) {
+        return url('assets/img/placeholder.svg');
+    }
+    // Built-in images live in assets/, admin uploads in uploads/
+    return str_starts_with($p['image'], 'assets/') ? url($p['image']) : url('uploads/' . $p['image']);
 }
 
 function status_label(string $status): string

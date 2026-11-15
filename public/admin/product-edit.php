@@ -24,7 +24,9 @@ if (is_post()) {
     if (!is_numeric($data['price']) || $data['price'] < 0) $errors[] = 'সঠিক দাম দিন।';
     if ($data['sale_price'] !== '' && (!is_numeric($data['sale_price']) || $data['sale_price'] < 0)) $errors[] = 'সঠিক অফার দাম দিন।';
     if (!ctype_digit($data['download_limit']) || (int)$data['download_limit'] < 1) $errors[] = 'ডাউনলোড সীমা কমপক্ষে ১ হতে হবে।';
-    if (!$p && !has_upload('file')) $errors[] = 'ডিজিটাল ফাইল আপলোড করুন।';
+    if (!has_upload('file') && empty($p['file_path']) && $data['is_active']) {
+        $errors[] = 'ডিজিটাল ফাইল আপলোড না করে পণ্যটি চালু করা যাবে না। ফাইল দিন, অথবা "সাইটে দেখাও" টিক তুলে দিয়ে সেভ করুন।';
+    }
 
     $image = $p['image'] ?? null;
     $file = ['path' => $p['file_path'] ?? null, 'name' => $p['file_name'] ?? null];
