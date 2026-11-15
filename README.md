@@ -4,13 +4,13 @@
 
 - কাস্টমার: রেজিস্টার/লগইন, কার্ট, কুপন, bKash/Nagad (manual Send Money + TrxID) চেকআউট, অ্যাকাউন্ট থেকে ডাউনলোড (সীমা সহ)
 - অ্যাডমিন (`/admin/`): ড্যাশবোর্ড, পেমেন্ট যাচাই করে অর্ডার অনুমোদন/বাতিল, পণ্য যোগ/এডিট (ছবি + ফাইল), কুপন, কাস্টমার, সেটিংস
-- পেইড ফাইলগুলো `public_html` এর বাইরে থাকে — লিংক শেয়ার করে কেউ ডাউনলোড করতে পারবে না
+- পেইড ফাইলগুলো ওয়েবসাইট ফোল্ডারের বাইরে থাকে — লিংক শেয়ার করে কেউ ডাউনলোড করতে পারবে না
 
 ## ফোল্ডার
 
 | Repo তে | সার্ভারে যায় | কী আছে |
 |---|---|---|
-| `public/` | `~/public_html` | ওয়েবসাইটের পেজ, CSS, ছবি |
+| `public/` | `~/practicalkhata.com` (Document Root) | ওয়েবসাইটের পেজ, CSS, ছবি |
 | `app/` | `~/practicalkhata_app` | কোড, `config.php`, পেইড ফাইল (`storage/files`) |
 | `database/schema.sql` | `~/practicalkhata_app/schema.sql` | ডাটাবেস টেবিল |
 
@@ -28,7 +28,7 @@
 5. **সেটিংস**: অ্যাডমিন → সেটিংস → bKash / Nagad নাম্বার দিন। এরপর পণ্য যোগ করুন।
 6. **SSL**: cPanel → *SSL/TLS Status* → AutoSSL চালু করুন (সাইট https এ যাবে)।
 
-> Addon Domain হলে `.cpanel.yml` এ `WEBROOT` কে ডোমেইনের ফোল্ডারে বদলান (যেমন `$HOME/practicalkhata.com`)।
+> practicalkhata.com এর Document Root `~/practicalkhata.com`। এটা বদলালে `.cpanel.yml` এর `WEBROOT` ও বদলাতে হবে।
 
 ## GitHub থেকে অটো আপডেট
 
