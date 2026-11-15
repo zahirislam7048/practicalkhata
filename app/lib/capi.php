@@ -100,29 +100,7 @@ function capi_flush(): void
     if (!$events) {
         return;
     }
-    // Let the visitor's page finish first
-    if (session_status() === PHP_SESSION_ACTIVE) {
-        session_write_close();
-    }
-    if (function_exists('fastcgi_finish_request')) {
-        fastcgi_finish_request();
-    } elseif (function_exists('litespeed_finish_request')) {
-        litespeed_finish_request();
-    } else {
-        // Fallback: tell the browser the page is complete, then keep working
-        $out = '';
-        while (ob_get_level()) {
-            $out = ob_get_clean() . $out;
-        }
-        if (!headers_sent()) {
-            header('Connection: close');
-            header('Content-Encoding: none');
-            header('Content-Length: ' . strlen($out));
-        }
-        echo $out;
-        flush();
-    }
-    ignore_user_abort(true);
+    finish_response_early();
 
     $payload = ['data' => $events];
     if (setting('capi_test_code') !== '') {
@@ -156,6 +134,47 @@ function capi_flush(): void
     try {
         q('INSERT INTO settings (`key`, `value`) VALUES (\'capi_last_status\', ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)',
           [date('d M Y h:i:s A') . ' — ' . $status]);
+    } catch (Throwable $t) {
+    }
+}
+
+/** Deliver the page to the visitor now; anything after this runs in the background. Safe to call twice. */
+function finish_response_early(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } elseif (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } else {
+        // Fallback: tell the browser the page is complete, then keep working
+        $out = '';
+        while (ob_get_level()) {
+            $out = ob_get_clean() . $out;
+        }
+        if (!headers_sent()) {
+            header('Connection: close');
+            header('Content-Encoding: none');
+            header('Content-Length: ' . strlen($out));
+        }
+        echo $out;
+        flush();
+    }
+    ignore_user_abort(true);
+}
+
+function save_status(string $key, string $status): void
+{
+    try {
+        q('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)',
+          [$key, date('d M Y h:i:s A') . ' — ' . $status]);
     } catch (Throwable $t) {
     }
 }

@@ -158,6 +158,9 @@ function track_event(string $fbEvent, string $gaEvent, array $items, float $valu
     $extra['event_id'] ??= new_event_id(strtolower($fbEvent));
     $ev = [$fbEvent, $gaEvent, ['items' => $items, 'value' => $value] + $extra];
     // Same event from the server (Conversions API), de-duplicated by event_id
+    if ($gaEvent === 'purchase') {
+        ga4_queue_purchase($extra['event_id'], $items, $value, $extra['coupon'] ?? null);
+    }
     capi_queue($fbEvent, $extra['event_id'], array_filter([
         'currency'     => 'BDT',
         'value'        => $value,

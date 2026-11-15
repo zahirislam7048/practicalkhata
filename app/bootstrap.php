@@ -37,6 +37,7 @@ require APP_DIR . '/lib/auth.php';
 require APP_DIR . '/lib/shop.php';
 require APP_DIR . '/lib/migrations.php';
 require APP_DIR . '/lib/capi.php';
+require APP_DIR . '/lib/ga4.php';
 
 // Every page except the installer needs a config.
 if ($GLOBALS['config'] === null && !defined('PK_INSTALLER')) {

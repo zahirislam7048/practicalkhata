@@ -63,3 +63,9 @@ php -S localhost:8000 -t public
 - চালু করতে: অ্যাডমিন → সেটিংস → **Conversions API Access Token** দিন (Events Manager → Pixel → Settings → Generate access token)।
   টেস্টের সময় Events Manager → Test events থেকে **Test Event Code** নিয়ে সেটিংসে দিন, কাজ শেষে খালি করুন।
 - সর্বশেষ পাঠানোর ফলাফল সেটিংস পেজে দেখা যায়।
+
+### Google Analytics 4
+
+- **Browser:** `docs/gtm-ga4-container.json` → GTM → Admin → **Import Container** → Workspace: Default → **Merge** (Rename conflicting) → ভেরিয়েবল **GA4 Measurement ID** এ নিজের `G-XXXXXXX` দিন → **Submit / Publish**।
+- **Server (শুধু Purchase):** অ্যাডমিন → সেটিংস → GA4 Measurement ID + API Secret। browser ও server একই `transaction_id` (অর্ডার নম্বর) পাঠায়, তাই GA4 একবারই গোনে।
+  টেস্টের সময় "GA4 Debug মোড" চালু করলে Google ভুল থাকলে জানায় (তখন GA4 এ রেকর্ড হয় না) — টেস্ট শেষে বন্ধ করুন।
