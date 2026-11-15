@@ -1,11 +1,15 @@
 :root {
-  --brand: #4f46e5;
-  --brand-dark: #4338ca;
-  --brand-soft: #eef2ff;
+  --brand: #15803d;        /* green */
+  --brand-dark: #166534;
+  --brand-soft: #dcfce7;
+  --accent: #facc15;       /* yellow */
+  --accent-dark: #eab308;
+  --accent-soft: #fef9c3;
+  --deep: #052e16;         /* very dark green for footer / admin */
   --text: #1f2937;
   --muted: #6b7280;
   --line: #e5e7eb;
-  --bg: #f8fafc;
+  --bg: #f7fbf4;
   --card: #fff;
   --ok: #059669;
   --ok-soft: #d1fae5;
@@ -47,8 +51,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 1em 0; }
 .nav-links { display: flex; align-items: center; gap: 16px; margin-left: auto; white-space: nowrap; }
 .nav-links a { color: var(--text); font-weight: 500; }
 .nav-links a.btn { color: #fff; }
-.badge { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--brand); color: #fff; font-size: .75rem; text-align: center; line-height: 20px; }
-.badge-warn { background: var(--warn); }
+.badge { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--deep); font-weight: 700; font-size: .75rem; text-align: center; line-height: 20px; }
+.badge-warn { background: var(--accent); color: var(--deep); }
 
 /* Buttons & forms */
 .btn {
@@ -95,7 +99,7 @@ input[type=checkbox], input[type=radio] { width: auto; }
 .product-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; margin: 0; }
 .product-card .thumb { position: relative; aspect-ratio: 4/3; background: var(--brand-soft); }
 .product-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ribbon { position: absolute; top: 10px; left: 10px; background: var(--bad); color: #fff; font-size: .8rem; padding: 2px 10px; border-radius: 999px; }
+.ribbon { position: absolute; top: 10px; left: 10px; background: var(--accent); color: var(--deep); font-weight: 700; font-size: .8rem; padding: 2px 10px; border-radius: 999px; }
 .card-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card-body h3 { margin: 0; font-size: 1.05rem; }
 .card-body h3 a { color: var(--text); }
@@ -107,13 +111,15 @@ input[type=checkbox], input[type=radio] { width: auto; }
 /* Hero */
 .hero {
   display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-radius: 20px; padding: 40px; margin-bottom: 32px;
+  background: linear-gradient(135deg, #14532d 0%, #15803d 55%, #22c55e 100%); color: #fff; border-radius: 20px; padding: 40px; margin-bottom: 32px;
 }
 .hero h1 { font-size: 2.1rem; }
-.hero .btn { background: #fff; color: var(--brand); border-color: #fff; }
+.hero .btn { background: var(--accent); color: var(--deep); border-color: var(--accent); }
+.hero .btn:hover { background: var(--accent-dark); }
+.hero h1 span, .accent { color: var(--accent); }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .steps li { background: rgba(255,255,255,.12); border-radius: 12px; padding: 10px 14px; }
-.steps b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: var(--brand); margin-right: 8px; }
+.steps b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--deep); margin-right: 8px; }
 
 /* Product detail */
 .crumbs { font-size: .9rem; color: var(--muted); margin-bottom: 16px; }
@@ -146,7 +152,7 @@ input[type=checkbox], input[type=radio] { width: auto; }
 .pay-name { font-weight: 700; font-size: 1.15rem; }
 .pay-number { font-size: 1.1rem; letter-spacing: .03em; }
 .pay-number small { color: var(--muted); font-size: .75rem; }
-.pay-box { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; }
+.pay-box { background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; }
 .pay-box p { margin: 4px 0; }
 
 /* Account */
@@ -169,20 +175,23 @@ button.status { cursor: pointer; }
 .tabs { display: flex; gap: 4px; background: var(--card); border-radius: 10px; padding: 4px; box-shadow: var(--shadow); }
 .tabs a { padding: 6px 14px; border-radius: 8px; color: var(--text); }
 .tabs a.active { background: var(--brand); color: #fff; }
+.site-header { border-bottom: 3px solid var(--accent); }
+.brand-mark { box-shadow: inset 0 -4px 0 var(--accent); }
 
 /* Footer */
-.site-footer { background: #111827; color: #d1d5db; padding: 32px 0; }
-.site-footer a { color: #c7d2fe; }
+.site-footer { background: var(--deep); color: #d1fae5; border-top: 4px solid var(--accent); padding: 32px 0; }
+.site-footer a { color: var(--accent); }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; }
 
 /* Admin */
 body.admin { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
-.admin-side { background: #111827; color: #fff; padding: 20px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.admin-side { background: var(--deep); color: #fff; padding: 20px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .admin-side .brand { color: #fff; margin-bottom: 24px; }
-.admin-side nav a { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 8px; color: #d1d5db; }
-.admin-side nav a:hover { background: #1f2937; text-decoration: none; }
+.admin-side nav a { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 8px; color: #d1fae5; }
+.admin-side nav a:hover { background: #14532d; text-decoration: none; }
 .admin-side nav a.active { background: var(--brand); color: #fff; }
-.admin-side hr { border-color: #374151; }
+.admin-side hr { border-color: #166534; }
+.admin-side .brand-mark { background: var(--accent); color: var(--deep); }
 .admin-main { padding: 28px; min-width: 0; }
 .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
 .stat { margin: 0; }
@@ -208,3 +217,4 @@ body.admin { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh;
   .nav-links { gap: 10px; font-size: .95rem; }
   .table { font-size: .9rem; }
 }
+.site-footer .muted { color: #a7f3d0; }

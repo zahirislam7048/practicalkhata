@@ -12,7 +12,7 @@ $u = current_user();
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=1">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=2">
 <?php require __DIR__ . '/tracking_head.php'; ?>
 <link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
 </head>
