@@ -1,0 +1,44 @@
+# Push to main → cPanel pulls the repo (Git Version Control) and runs .cpanel.yml.
+#
+# One-time setup — GitHub repo → Settings → Secrets and variables → Actions → New repository secret:
+#   CPANEL_HOST       server hostname from cPanel's "General Information" box, e.g. server123.web-hosting.com
+#   CPANEL_USER       your cPanel username
+#   CPANEL_TOKEN      cPanel → Security → Manage API Tokens → Create
+#   CPANEL_REPO_PATH  "Repository Path" shown in Git Version Control, e.g. /home/cpaneluser/repositories/practicalkhata
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax check
+        run: find . -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+      - name: Pull latest code into cPanel
+        env:
+          HOST: ${{ secrets.CPANEL_HOST }}
+          USER: ${{ secrets.CPANEL_USER }}
+          TOKEN: ${{ secrets.CPANEL_TOKEN }}
+          REPO: ${{ secrets.CPANEL_REPO_PATH }}
+        run: |
+          set -euo pipefail
+          api() {
+            curl -sS --fail --max-time 120 -H "Authorization: cpanel $USER:$TOKEN" \
+              "https://$HOST:2083/execute/$1" --data-urlencode "repository_root=$REPO" "${@:2}"
+          }
+          echo "--- update from remote"
+          out=$(api VersionControl/update --data-urlencode "branch=main")
+          echo "$out" | jq -c '{status, errors}'
+          [ "$(echo "$out" | jq .status)" = "1" ]
+          echo "--- deploy HEAD commit (.cpanel.yml)"
+          out=$(api VersionControlDeployment/create)
+          echo "$out" | jq -c '{status, errors, data: {deploy_id: .data.deploy_id}}'
+          [ "$(echo "$out" | jq .status)" = "1" ]

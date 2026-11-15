@@ -1,0 +1,18 @@
+---
+# cPanel → Git™ Version Control runs these tasks on "Deploy HEAD Commit"
+# (and automatically from the GitHub Action in .github/workflows/deploy.yml).
+#
+#   public/   → ~/public_html          (website files)
+#   app/      → ~/practicalkhata_app   (code, config.php and paid files — NOT web-accessible)
+#
+# config.php, uploads/ and storage/files/ are not in Git, so a deploy never overwrites them.
+# If practicalkhata.com is an Addon Domain, change WEBROOT to its folder, e.g. $HOME/practicalkhata.com
+deployment:
+  tasks:
+    - export WEBROOT=$HOME/public_html
+    - export APPDIR=$HOME/practicalkhata_app
+    - /bin/mkdir -p $WEBROOT/uploads $APPDIR/storage/files
+    - /bin/cp -R app/. $APPDIR/
+    - /bin/cp database/schema.sql $APPDIR/schema.sql
+    - /bin/cp -R public/. $WEBROOT/
+    - /bin/chmod 750 $APPDIR $APPDIR/storage/files
