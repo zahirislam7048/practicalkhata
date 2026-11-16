@@ -115,6 +115,42 @@ function run_migrations(): void
                 db()->exec("ALTER TABLE orders ADD email_sent_at DATETIME NULL, ADD email_error VARCHAR(255) NULL");
             }
         },
+        8 => function () {
+            // e-Return guide (draft until the admin uploads the PDF and switches it on)
+            $catName = 'ট্যাক্স ও সরকারি কাজ';
+            $catId = val('SELECT id FROM categories WHERE slug = ?', [slugify($catName)]);
+            if (!$catId) {
+                q('INSERT INTO categories (name, slug, icon, sort_order) VALUES (?,?,?,?)', [$catName, slugify($catName), '🧾', 2]);
+                $catId = (int)db()->lastInsertId();
+            }
+            $title = 'নিজের আয়কর রিটার্ন নিজে জমা দিন (e-Return)';
+            if (!val('SELECT id FROM products WHERE title = ?', [$title])) {
+                q('INSERT INTO products (title, slug, category_id, short_desc, description, price, sale_price, image, download_limit, is_active)
+                   VALUES (?,?,?,?,?,?,?,?,?,0)', [
+                    $title,
+                    unique_slug('nijer-aykor-return-nije-joma-din-e-return'),
+                    $catId,
+                    'এজেন্ট ছাড়াই ঘরে বসে অনলাইনে আয়কর রিটার্ন জমা দেওয়ার ধাপে ধাপে বাংলা গাইড — কর হিসাবের উদাহরণ ও পূরণযোগ্য ওয়ার্কশিট সহ।',
+                    "আয়কর রিটার্ন মানেই উকিলের অফিসে দৌড়ঝাঁপ আর বাড়তি খরচ — এমন নয়। এই গাইড দেখে চাকরিজীবী, শিক্ষক, ছোট ব্যবসায়ী বা গৃহিণী — যে কেউ নিজেই e-Return পোর্টালে রিটার্ন জমা দিতে পারবেন।\n\n"
+                    . "যা পাবেন (২৬ পৃষ্ঠা, PDF):\n"
+                    . "• কার রিটার্ন দিতে হবে, কী কী কাগজ লাগবে — টিক দেওয়ার চেকলিস্ট\n"
+                    . "• অনলাইনে e-TIN নেওয়া ও e-Return পোর্টালে রেজিস্ট্রেশন\n"
+                    . "• বেতনের আয়, কর হার ও স্তর অনুযায়ী কর হিসাবের সহজ নিয়ম\n"
+                    . "• সঞ্চয়পত্র, DPS, বীমায় বিনিয়োগ করে বৈধভাবে কর কমানোর (রেয়াত) হিসাব\n"
+                    . "• উৎসে কাটা কর ও ন্যূনতম করের নিয়ম\n"
+                    . "• চাকরিজীবী, শিক্ষক ও দোকান মালিক — তিনজনের সম্পূর্ণ কর হিসাবের উদাহরণ\n"
+                    . "• সম্পদ-দায় ও জীবনযাত্রার খরচের বিবরণী কীভাবে মেলাবেন\n"
+                    . "• পোর্টালে ধাপে ধাপে পূরণ, অনলাইনে কর পরিশোধ ও প্রাপ্তিস্বীকার\n"
+                    . "• সাধারণ ভুল, সময়সীমা, প্রশ্নোত্তর\n"
+                    . "• ৬টি প্রিন্টযোগ্য ওয়ার্কশিট ও জমার আগের চেকলিস্ট\n\n"
+                    . "দ্রষ্টব্য: এটি শিক্ষামূলক গাইড, আইনি পরামর্শ নয়। কর হার ও সময়সীমা প্রতি বছর বদলাতে পারে — জমার আগে NBR-এর সর্বশেষ নিয়ম মিলিয়ে নিন।",
+                    149,
+                    99,
+                    'assets/img/aykor-return-cover.jpg',
+                    5,
+                ]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {
