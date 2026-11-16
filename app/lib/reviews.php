@@ -60,3 +60,24 @@ function review_status_label(string $s): string
 {
     return ['pending' => 'অনুমোদনের অপেক্ষায়', 'approved' => 'প্রকাশিত', 'hidden' => 'লুকানো'][$s] ?? $s;
 }
+
+/** Badge text: verified purchase, or where the admin collected this real feedback. */
+function review_badge(array $r): string
+{
+    if (!empty($r['order_item_id'])) {
+        return '✓ ভেরিফায়েড ক্রেতা';
+    }
+    return ($r['source'] ?? '') !== '' ? $r['source'] . ' থেকে সংগৃহীত' : 'কাস্টমারের মতামত';
+}
+
+function review_sources(): array
+{
+    return ['Facebook', 'Messenger', 'WhatsApp', 'ইমেইল', 'ফোনে/সরাসরি'];
+}
+
+/** Latest approved reviews across all products, for the home page slider. */
+function latest_reviews(int $limit = 10): array
+{
+    return rows("SELECT r.*, p.title, p.slug FROM reviews r JOIN products p ON p.id = r.product_id
+                 WHERE r.status = 'approved' AND p.is_active = 1 ORDER BY r.rating DESC, r.created_at DESC LIMIT $limit");
+}

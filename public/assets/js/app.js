@@ -117,3 +117,23 @@ document.querySelectorAll('form[data-remember]').forEach(function (f) {
   });
   f.addEventListener('submit', function () { setTimeout(function () { sessionStorage.removeItem(key); }, 0); });
 });
+
+// Home page testimonials: swipeable row that auto-advances
+document.querySelectorAll('[data-testimonials]').forEach(function (track) {
+  var sec = track.closest('section'), timer;
+  function step(dir) {
+    var card = track.querySelector('.tm-card'); if (!card) return;
+    var w = card.getBoundingClientRect().width + 14;
+    var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 5;
+    if (dir > 0 && atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
+    else track.scrollBy({ left: dir * w, behavior: 'smooth' });
+  }
+  function auto() { clearInterval(timer); timer = setInterval(function () { step(1); }, 4500); }
+  sec.querySelector('.tm-next').onclick = function () { step(1); auto(); };
+  sec.querySelector('.tm-prev').onclick = function () { step(-1); auto(); };
+  track.addEventListener('pointerdown', function () { clearInterval(timer); });
+  track.addEventListener('mouseenter', function () { clearInterval(timer); });
+  track.addEventListener('mouseleave', auto);
+  if (track.scrollWidth > track.clientWidth + 5) auto();
+  else sec.querySelector('.tm-nav').style.display = 'none';
+});

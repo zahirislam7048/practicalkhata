@@ -144,6 +144,27 @@ require APP_DIR . '/views/header.php';
   <?php endif; ?>
 </section>
 
+<?php $homeReviews = latest_reviews(10); if ($homeReviews): ?>
+<section class="block testimonials">
+  <div class="block-head"><h2>💬 কাস্টমাররা যা বলছেন</h2>
+    <div class="tm-nav"><button type="button" class="tm-prev" aria-label="আগের">‹</button><button type="button" class="tm-next" aria-label="পরের">›</button></div>
+  </div>
+  <div class="tm-track" data-testimonials>
+    <?php foreach ($homeReviews as $r): ?>
+    <figure class="tm-card">
+      <?= stars_html((float)$r['rating'], 16) ?>
+      <blockquote>“<?= e(mb_strimwidth($r['comment'], 0, 220, '…')) ?>”</blockquote>
+      <figcaption>
+        <span class="rv-avatar"><?= e(mb_substr($r['name'], 0, 1)) ?></span>
+        <span><b><?= e($r['name']) ?></b> <small class="rv-verified<?= $r['order_item_id'] ? '' : ' rv-collected' ?>"><?= e(review_badge($r)) ?></small>
+          <a href="<?= url('product.php?slug=' . urlencode($r['slug'])) ?>#reviews"><?= e($r['title']) ?></a></span>
+      </figcaption>
+    </figure>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
 <section class="trust-bar">
   <div><?= icon('zap', 24) ?><span><b>সাথে সাথে ডাউনলোড</b>যাচাইয়ের পরই</span></div>
   <div><?= icon('wallet', 24) ?><span><b>bKash / Nagad</b>সহজ পেমেন্ট</span></div>

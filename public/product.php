@@ -134,7 +134,7 @@ require APP_DIR . '/views/header.php';
   <?php foreach ($reviews as $r): ?>
     <div class="rv-item">
       <div class="rv-head"><span class="rv-avatar"><?= e(mb_substr($r['name'], 0, 1)) ?></span>
-        <div><b><?= e($r['name']) ?></b> <span class="rv-verified">✓ ভেরিফায়েড ক্রেতা</span>
+        <div><b><?= e($r['name']) ?></b> <span class="rv-verified<?= $r['order_item_id'] ? '' : ' rv-collected' ?>"><?= e(review_badge($r)) ?></span>
         <div><?= stars_html((float)$r['rating'], 14) ?> <span class="muted small"><?= e(date('d M Y', strtotime($r['created_at']))) ?></span></div></div>
       </div>
       <p><?= nl2br(e($r['comment'])) ?></p>

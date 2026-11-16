@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   comment TEXT NOT NULL,
   status ENUM('pending','approved','hidden') NOT NULL DEFAULT 'pending',
   admin_reply TEXT NULL,
+  source VARCHAR(40) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_product (product_id, status),
   CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE

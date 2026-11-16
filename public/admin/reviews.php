@@ -12,6 +12,19 @@ if (is_post()) {
     } elseif ($action === 'reply') {
         q('UPDATE reviews SET admin_reply = ? WHERE id = ?', [input('reply') ?: null, $id]);
         flash('success', 'উত্তর সেভ হয়েছে।');
+    } elseif ($action === 'add') {
+        $pid = (int)input('product_id');
+        $rating = (int)input('rating');
+        $src = in_array(input('source'), review_sources(), true) ? input('source') : '';
+        if (!isset($_POST['confirm_real'])) {
+            flash('error', 'শুধু আসল কাস্টমারের দেওয়া মতামত যোগ করা যাবে — নিশ্চিত করার বক্সে টিক দিন।');
+        } elseif (!val('SELECT id FROM products WHERE id = ?', [$pid]) || $rating < 1 || $rating > 5 || input('name') === '' || mb_strlen(input('comment')) < 5 || $src === '') {
+            flash('error', 'পণ্য, নাম, স্টার, উৎস ও মতামত — সব পূরণ করুন।');
+        } else {
+            q("INSERT INTO reviews (product_id, name, rating, comment, source, status) VALUES (?,?,?,?,?,'approved')",
+              [$pid, mb_substr(input('name'), 0, 60), $rating, mb_substr(input('comment'), 0, 1000), $src]);
+            flash('success', 'মতামত যোগ হয়েছে — সাইটে "' . $src . ' থেকে সংগৃহীত" লেখাসহ দেখাবে।');
+        }
     } elseif ($action === 'delete') {
         q('DELETE FROM reviews WHERE id = ?', [$id]);
         flash('success', 'রিভিউ মুছে ফেলা হয়েছে।');
@@ -40,6 +53,27 @@ $counts = array_column(rows('SELECT status, COUNT(*) n FROM reviews GROUP BY sta
   </div>
   <span class="muted small">শুধু ভেরিফায়েড ক্রেতারা রিভিউ দিতে পারেন। <?= setting('reviews_auto_approve') === '1' ? 'নতুন রিভিউ নিজে থেকে প্রকাশ হচ্ছে।' : 'নতুন রিভিউ আপনার অনুমোদনের পর প্রকাশ হবে।' ?></span>
 </div>
+<details class="card add-review">
+  <summary><b>➕ আসল কাস্টমারের মতামত যোগ করুন</b> <span class="muted small">(Facebook/WhatsApp/Messenger-এ পাওয়া প্রশংসা)</span></summary>
+  <form method="post" class="form" style="margin-top:12px">
+    <?= csrf_field() ?><input type="hidden" name="action" value="add">
+    <div class="row2">
+      <label>পণ্য<select name="product_id" required>
+        <?php foreach (rows('SELECT id, title FROM products ORDER BY title') as $pp): ?><option value="<?= (int)$pp['id'] ?>"><?= e($pp['title']) ?></option><?php endforeach; ?>
+      </select></label>
+      <label>কোথা থেকে পেয়েছেন<select name="source" required>
+        <?php foreach (review_sources() as $src): ?><option><?= e($src) ?></option><?php endforeach; ?>
+      </select></label>
+    </div>
+    <div class="row2">
+      <label>কাস্টমারের নাম<input name="name" maxlength="60" required></label>
+      <label>স্টার (কাস্টমার যা বলেছেন সে অনুযায়ী)<select name="rating"><?php for ($i = 5; $i >= 1; $i--): ?><option value="<?= $i ?>"><?= str_repeat('★', $i) ?></option><?php endfor; ?></select></label>
+    </div>
+    <label>মতামত (কাস্টমারের নিজের কথা, যতটা সম্ভব হুবহু)<textarea name="comment" rows="3" maxlength="1000" required></textarea></label>
+    <label class="check"><input type="checkbox" name="confirm_real" value="1" required> আমি নিশ্চিত করছি এটি একজন আসল কাস্টমারের দেওয়া মতামত (প্রমাণ — স্ক্রিনশট — আমার কাছে আছে)</label>
+    <button class="btn">যোগ করুন</button>
+  </form>
+</details>
 <?php if (!$reviews): ?><div class="card muted">এখানে কোনো রিভিউ নেই।</div><?php endif; ?>
 <?php foreach ($reviews as $r): ?>
 <div class="card admin-review">
@@ -48,7 +82,7 @@ $counts = array_column(rows('SELECT status, COUNT(*) n FROM reviews GROUP BY sta
       <?= stars_html((float)$r['rating'], 16) ?> <b><?= e($r['name']) ?></b>
       <span class="muted small">· <?= e(date('d M Y, h:i A', strtotime($r['created_at']))) ?></span>
       <div class="small"><a href="<?= url('product.php?slug=' . urlencode($r['slug'])) ?>#reviews" target="_blank"><?= e($r['title']) ?></a>
-        <?php if ($r['order_no']): ?> · অর্ডার <a href="orders.php?s=<?= urlencode($r['order_no']) ?>">#<?= e($r['order_no']) ?></a><?php endif; ?></div>
+        <?php if ($r['order_no']): ?> · অর্ডার <a href="orders.php?s=<?= urlencode($r['order_no']) ?>">#<?= e($r['order_no']) ?></a><?php else: ?> · <?= e(review_badge($r)) ?><?php endif; ?></div>
     </div>
     <span class="status <?= $r['status'] === 'approved' ? 'status-paid' : ($r['status'] === 'pending' ? 'status-pending' : 'status-rejected') ?>"><?= e(review_status_label($r['status'])) ?></span>
   </div>

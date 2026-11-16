@@ -168,6 +168,12 @@ function run_migrations(): void
   CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         },
+        10 => function () {
+            // Real customer feedback added by the admin (Facebook, WhatsApp...) — labelled with its source
+            if (!val("SHOW COLUMNS FROM reviews LIKE 'source'")) {
+                db()->exec("ALTER TABLE reviews ADD source VARCHAR(40) NULL AFTER admin_reply");
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {
