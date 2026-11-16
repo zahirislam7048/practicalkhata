@@ -180,6 +180,16 @@ function run_migrations(): void
                 db()->exec("ALTER TABLE products ADD prior_sales INT UNSIGNED NOT NULL DEFAULT 0 AFTER download_limit");
             }
         },
+        12 => function () {
+            // Product links from the title (/product/পণ্যের-নাম); old links keep working via redirects
+            db()->exec("CREATE TABLE IF NOT EXISTS product_slugs (
+                old_slug VARCHAR(220) NOT NULL PRIMARY KEY, product_id INT UNSIGNED NOT NULL,
+                CONSTRAINT fk_slug_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            foreach (rows('SELECT id, title, slug FROM products') as $p) {
+                set_product_slug((int)$p['id'], unique_slug($p['title'], (int)$p['id']));
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

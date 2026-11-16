@@ -58,7 +58,7 @@ $banners = rows('SELECT * FROM banners ORDER BY sort_order, id');
     <?= csrf_field() ?><input type="hidden" name="action" value="add">
     <label>ছবি (JPG/PNG/WEBP)<input type="file" name="image" accept="image/*" required></label>
     <label>শিরোনাম (ঐচ্ছিক)<input name="title"></label>
-    <label>লিংক (ঐচ্ছিক) <small class="muted">যেমন /product.php?slug=... বা /index.php?offer=1</small><input name="link"></label>
+    <label>লিংক (ঐচ্ছিক) <small class="muted">যেমন /product/পণ্যের-নাম বা /index.php?offer=1</small><input name="link"></label>
     <label>ক্রম<input name="sort_order" type="number" value="<?= count($banners) ?>"></label>
     <div class="upload-progress" hidden><div class="up-bar"><span></span></div><div class="up-text small">আপলোড হচ্ছে… <b>0%</b> <span class="muted"></span></div></div>
     <button class="btn">যোগ করুন</button>

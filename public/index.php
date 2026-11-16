@@ -67,7 +67,7 @@ require APP_DIR . '/views/header.php';
         <a class="slide" href="<?= e($b['link'] ?: '#products') ?>"><img src="<?= url('uploads/' . $b['image']) ?>" alt="<?= e((string)$b['title']) ?>" width="1200" height="450" <?= $b === $banners[0] ? 'fetchpriority="high"' : 'loading="lazy"' ?>></a>
       <?php endforeach; ?>
       <?php foreach ($autoSlides as $i => $s): $sp = product_price($s); $so = discount_percent($s); ?>
-        <a class="slide auto-slide v<?= $i % 3 ?>" href="<?= url('product.php?slug=' . urlencode($s['slug'])) ?>">
+        <a class="slide auto-slide v<?= $i % 3 ?>" href="<?= product_url($s) ?>">
           <div class="as-text">
             <span class="as-kicker"><?= $so ? '🔥 ' . bn($so) . '% ছাড়' : '✨ নতুন এসেছে' ?></span>
             <h2><?= e($s['title']) ?></h2>
@@ -166,7 +166,7 @@ require APP_DIR . '/views/header.php';
       <figcaption>
         <span class="rv-avatar"><?= e(mb_substr($r['name'], 0, 1)) ?></span>
         <span><b><?= e($r['name']) ?></b> <small class="rv-verified<?= $r['order_item_id'] ? '' : ' rv-collected' ?>"><?= e(review_badge($r)) ?></small>
-          <a href="<?= url('product.php?slug=' . urlencode($r['slug'])) ?>#reviews"><?= e($r['title']) ?></a></span>
+          <a href="<?= product_url($r) ?>#reviews"><?= e($r['title']) ?></a></span>
       </figcaption>
     </figure>
     <?php endforeach; ?>

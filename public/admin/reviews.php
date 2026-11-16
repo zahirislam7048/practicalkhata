@@ -81,7 +81,7 @@ $counts = array_column(rows('SELECT status, COUNT(*) n FROM reviews GROUP BY sta
     <div>
       <?= stars_html((float)$r['rating'], 16) ?> <b><?= e($r['name']) ?></b>
       <span class="muted small">· <?= e(date('d M Y, h:i A', strtotime($r['created_at']))) ?></span>
-      <div class="small"><a href="<?= url('product.php?slug=' . urlencode($r['slug'])) ?>#reviews" target="_blank"><?= e($r['title']) ?></a>
+      <div class="small"><a href="<?= product_url($r) ?>#reviews" target="_blank"><?= e($r['title']) ?></a>
         <?php if ($r['order_no']): ?> · অর্ডার <a href="orders.php?s=<?= urlencode($r['order_no']) ?>">#<?= e($r['order_no']) ?></a><?php else: ?> · <?= e(review_badge($r)) ?><?php endif; ?></div>
     </div>
     <span class="status <?= $r['status'] === 'approved' ? 'status-paid' : ($r['status'] === 'pending' ? 'status-pending' : 'status-rejected') ?>"><?= e(review_status_label($r['status'])) ?></span>

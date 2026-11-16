@@ -331,3 +331,17 @@ function total_customers(): int
     $online = (int)val("SELECT COUNT(DISTINCT COALESCE(CONCAT('u', user_id), guest_phone, id)) FROM orders WHERE status = 'paid'");
     return (int)setting('offline_customers', '0') + $online;
 }
+
+/** Change a product's link; the old one is remembered and redirects to the new one. */
+function set_product_slug(int $productId, string $newSlug): void
+{
+    $old = (string)val('SELECT slug FROM products WHERE id = ?', [$productId]);
+    if ($old === $newSlug || $newSlug === '') {
+        return;
+    }
+    if ($old !== '') {
+        q('INSERT INTO product_slugs (old_slug, product_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE product_id = VALUES(product_id)', [$old, $productId]);
+    }
+    q('DELETE FROM product_slugs WHERE old_slug = ?', [$newSlug]); // the new link must point to this product only
+    q('UPDATE products SET slug = ? WHERE id = ?', [$newSlug, $productId]);
+}

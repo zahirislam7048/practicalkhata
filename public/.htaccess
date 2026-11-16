@@ -9,6 +9,12 @@ DirectoryIndex index.php
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
+# Pretty product links: /product/পণ্যের-নাম → product.php
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^product/(.+)$ product.php [L,QSA]
+</IfModule>
+
 <FilesMatch "^(\.|_init\.php$)">
     Require all denied
 </FilesMatch>

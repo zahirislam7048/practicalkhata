@@ -1,7 +1,22 @@
 <?php
 require __DIR__ . '/_init.php';
 
-$prod = row('SELECT * FROM products WHERE slug = ? AND is_active = 1', [(string)($_GET['slug'] ?? '')]);
+// Link: /product/পণ্যের-নাম  (old /product.php?slug=... and renamed links redirect here)
+$path = rawurldecode((string)parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH));
+$base = rtrim((string)($GLOBALS['config']['base_url'] ?? ''), '/');
+$slug = str_starts_with($path, $base . '/product/') ? trim(substr($path, strlen($base . '/product/')), '/') : (string)($_GET['slug'] ?? '');
+$prod = row('SELECT * FROM products WHERE slug = ? AND is_active = 1', [$slug]);
+if (!$prod && $slug !== '') {
+    $moved = row('SELECT p.* FROM product_slugs s JOIN products p ON p.id = s.product_id WHERE s.old_slug = ? AND p.is_active = 1', [$slug]);
+    if ($moved) {
+        header('Location: ' . product_url($moved), true, 301);
+        exit;
+    }
+}
+if ($prod && !str_starts_with($path, $base . '/product/')) {
+    header('Location: ' . product_url($prod) . (!empty($_GET['review']) ? '#reviews' : ''), true, 301);
+    exit;
+}
 if (!$prod) {
     http_response_code(404);
     $title = 'পাওয়া যায়নি';
@@ -125,7 +140,7 @@ require APP_DIR . '/views/header.php';
 
   <?php if ($myReviewItem): ?>
     <div class="rv-write"><h3>⭐ আপনার রিভিউ দিন</h3>
-      <?php $rvItemId = (int)$myReviewItem['id']; $rvToken = null; $rvReturn = url('product.php?slug=' . urlencode($prod['slug'])) . '#reviews'; $rvName = (string)current_user()['name']; require APP_DIR . '/views/review_form.php'; ?>
+      <?php $rvItemId = (int)$myReviewItem['id']; $rvToken = null; $rvReturn = product_url($prod) . '#reviews'; $rvName = (string)current_user()['name']; require APP_DIR . '/views/review_form.php'; ?>
     </div>
   <?php elseif (!current_user() || !$owned): ?>
     <p class="muted small">শুধু যারা পণ্যটি কিনেছেন তারাই রিভিউ দিতে পারেন — অর্ডারের পেজ বা ইমেইলের লিংক থেকে রিভিউ দেওয়া যায়।</p>
@@ -150,7 +165,7 @@ $ld = [
     'image' => $ogImage, 'description' => $metaDesc, 'sku' => 'PK-' . $prod['id'],
     'brand' => ['@type' => 'Brand', 'name' => setting('site_name', 'Practical Khata')],
     'offers' => ['@type' => 'Offer', 'priceCurrency' => 'BDT', 'price' => number_format($price, 2, '.', ''),
-                 'availability' => 'https://schema.org/InStock', 'url' => (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '') . url('product.php?slug=' . urlencode($prod['slug']))],
+                 'availability' => 'https://schema.org/InStock', 'url' => (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '') . product_url($prod)],
 ];
 if ($rv['count']) {
     $ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => $rv['avg'], 'reviewCount' => $rv['count']];

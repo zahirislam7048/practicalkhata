@@ -95,7 +95,17 @@ function unique_slug(string $title, ?int $ignoreId = null): string
     $base = slugify($title);
     $slug = $base;
     $i = 2;
-    while (val('SELECT id FROM products WHERE slug = ? AND id <> ?', [$slug, $ignoreId ?? 0])) {
+    $taken = function (string $s) use ($ignoreId): bool {
+        if (val('SELECT id FROM products WHERE slug = ? AND id <> ?', [$s, $ignoreId ?? 0])) {
+            return true;
+        }
+        try { // old links of other products (table exists from migration 12)
+            return (bool)val('SELECT product_id FROM product_slugs WHERE old_slug = ? AND product_id <> ?', [$s, $ignoreId ?? 0]);
+        } catch (Throwable $t) {
+            return false;
+        }
+    };
+    while ($taken($slug)) {
         $slug = $base . '-' . $i++;
     }
     return $slug;
@@ -319,4 +329,10 @@ function whatsapp_link(string $text = ''): string
         $n = '88' . $n;
     }
     return 'https://wa.me/' . $n . ($text !== '' ? '?text=' . rawurlencode($text) : '');
+}
+
+/** Pretty product link built from the title: /product/পণ্যের-নাম */
+function product_url(array $p): string
+{
+    return url('product/' . rawurlencode((string)$p['slug']));
 }

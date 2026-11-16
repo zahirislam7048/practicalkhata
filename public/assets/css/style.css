@@ -732,3 +732,5 @@ body.shop { background: var(--bg); }
 .social-proof b { font-size: 1.6rem; color: var(--accent); line-height: 1.2; }
 .social-proof span { font-size: .88rem; color: #d1fae5; }
 @media (max-width: 860px) { .social-proof { grid-template-columns: repeat(2, 1fr); } .social-proof b { font-size: 1.3rem; } }
+.slug-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.slug-row span { white-space: nowrap; font-size: .85rem; }

@@ -19,6 +19,7 @@ if (is_post()) {
         'sale_price'     => input('sale_price'),
         'download_limit' => input('download_limit', '5'),
         'prior_sales'    => (string)max(0, (int)input('prior_sales', '0')),
+        'slug'           => input('slug'),
         'is_active'      => isset($_POST['is_active']) ? 1 : 0,
         'category_id'    => (int)input('category_id') ?: null,
     ];
@@ -57,10 +58,17 @@ if (is_post()) {
         if ($p) {
             q('UPDATE products SET title=?, short_desc=?, description=?, price=?, sale_price=?, image=?, file_path=?, file_name=?, download_limit=?, is_active=?, category_id=?, prior_sales=? WHERE id=?',
               [...$params, (int)$data['prior_sales'], $p['id']]);
+            // Link follows the title (or the custom link typed by the admin); old link keeps redirecting
+            $typed = $data['slug'] !== '' ? slugify($data['slug']) : '';
+            if ($typed !== '' && $typed !== $p['slug']) {
+                set_product_slug((int)$p['id'], unique_slug($data['slug'], (int)$p['id']));          // admin typed a new link
+            } elseif ($data['title'] !== $p['title'] || $data['slug'] === '') {
+                set_product_slug((int)$p['id'], unique_slug($data['title'], (int)$p['id']));         // link follows the title
+            }
             flash('success', 'পণ্য আপডেট হয়েছে।');
         } else {
             q('INSERT INTO products (title, short_desc, description, price, sale_price, image, file_path, file_name, download_limit, is_active, category_id, prior_sales, slug) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-              [...$params, (int)$data['prior_sales'], unique_slug($data['title'])]);
+              [...$params, (int)$data['prior_sales'], unique_slug($data['slug'] !== '' ? $data['slug'] : $data['title'])]);
             flash('success', 'নতুন পণ্য যোগ হয়েছে।');
         }
         redirect('admin/products.php');
@@ -77,6 +85,10 @@ $maxUpload = ini_get('upload_max_filesize');
 <form method="post" enctype="multipart/form-data" class="card form" data-upload-progress>
   <?= csrf_field() ?>
   <label>পণ্যের নাম *<input name="title" value="<?= e($p['title'] ?? '') ?>" required></label>
+  <label>লিংক (URL) <small class="muted">— খালি রাখলে নাম থেকে নিজে তৈরি হবে; নাম বদলালে লিংকও বদলাবে, পুরোনো লিংক নতুনটিতে নিয়ে যাবে</small>
+    <div class="slug-row"><span class="muted"><?= e(($_SERVER['HTTP_HOST'] ?? '') . url('product/')) ?></span><input name="slug" value="<?= e(rawurldecode((string)($p['slug'] ?? ''))) ?>" placeholder="নাম থেকে তৈরি হবে"></div>
+    <?php if (!empty($p['id']) && !empty($p['slug'])): ?><a class="small" href="<?= e(product_url($p)) ?>" target="_blank">পেজ দেখুন ↗</a><?php endif; ?>
+  </label>
   <label>ক্যাটাগরি <small class="muted">(<a href="categories.php">ক্যাটাগরি যোগ/এডিট</a>)</small>
     <select name="category_id">
       <option value="">— কোনো ক্যাটাগরি নয় —</option>

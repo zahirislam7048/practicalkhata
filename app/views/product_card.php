@@ -2,7 +2,7 @@
 /** @var array $prod */
 $cPrice = product_price($prod);
 $cOff = discount_percent($prod);
-$cLink = url('product.php?slug=' . urlencode($prod['slug']));
+$cLink = product_url($prod);
 ?>
 <article class="pcard">
   <a href="<?= $cLink ?>" class="pcard-img">
