@@ -42,7 +42,77 @@ function cart_items(): array
 
 function cart_subtotal(array $items): float
 {
-    return array_sum(array_map('product_price', $items));
+    return array_sum(cart_line_prices($items));
+}
+
+/* ---------- Add-on offer: one item at full price, every other item at a flat price ---------- */
+
+function addon_enabled(): bool
+{
+    return setting('addon_enabled') === '1' && addon_price() >= 0;
+}
+
+function addon_price(): float
+{
+    return (float)setting('addon_price', '30');
+}
+
+/** Products that never get the add-on price (e.g. ৩০ দিনের Instagram রূপকথা) */
+function addon_excluded(): array
+{
+    return array_values(array_filter(array_map('intval', explode(',', setting('addon_exclude')))));
+}
+
+function addon_excluded_product(array $p): bool
+{
+    return in_array((int)$p['id'], addon_excluded(), true);
+}
+
+/**
+ * Price of each cart line: [product_id => price].
+ * Excluded products always keep their price. If one of them is in the cart, every other product gets the
+ * add-on price; otherwise the most expensive product stays at full price and the rest get the add-on price.
+ * A product that is already cheaper than the add-on price keeps its own price.
+ */
+function cart_line_prices(array $items): array
+{
+    $prices = [];
+    foreach ($items as $p) {
+        $prices[(int)$p['id']] = product_price($p);
+    }
+    if (!addon_enabled() || count($items) < 2) {
+        return $prices;
+    }
+    $anchor = null;
+    foreach ($items as $p) {
+        if (addon_excluded_product($p)) {
+            $anchor = 'excluded';
+            break;
+        }
+    }
+    if ($anchor === null) {
+        $eligible = $prices;
+        arsort($eligible);
+        $anchor = (int)array_key_first($eligible); // most expensive item stays full price
+    }
+    foreach ($items as $p) {
+        $id = (int)$p['id'];
+        if (addon_excluded_product($p) || $id === $anchor) {
+            continue;
+        }
+        $prices[$id] = min($prices[$id], addon_price());
+    }
+    return $prices;
+}
+
+/** What a product would cost if added to the current cart (for "add for just ৳30" labels). */
+function addon_price_for(array $p): ?float
+{
+    if (!addon_enabled() || addon_excluded_product($p) || !cart_ids() || in_array((int)$p['id'], cart_ids(), true)) {
+        return null;
+    }
+    $full = product_price($p);
+    return $full > addon_price() ? addon_price() : null;
 }
 
 /* ---------- Coupons ---------- */
@@ -190,9 +260,10 @@ function track_event(string $fbEvent, string $gaEvent, array $items, float $valu
     }
 }
 
-function track_items(array $products): array
+function track_items(array $products, ?array $linePrices = null): array
 {
-    return array_map(fn($p) => ['id' => (int)$p['id'], 'title' => $p['title'], 'price' => product_price($p)], $products);
+    return array_map(fn($p) => ['id' => (int)$p['id'], 'title' => $p['title'],
+        'price' => $linePrices[(int)$p['id']] ?? product_price($p)], $products);
 }
 
 /** Customer info for GTM/Pixel. Visitors who aren't logged in get the default name "Guest". */

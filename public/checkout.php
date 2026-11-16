@@ -19,6 +19,7 @@ if (!$items) {
 }
 
 $t = cart_totals($items);
+$lp = cart_line_prices($items);
 $methods = array_filter([
     'bkash' => setting('bkash_number'),
     'nagad' => setting('nagad_number'),
@@ -81,7 +82,7 @@ if (is_post()) {
             $orderId = (int)$pdo->lastInsertId();
             foreach ($items as $it) {
                 q('INSERT INTO order_items (order_id, product_id, title, price) VALUES (?,?,?,?)',
-                  [$orderId, $it['id'], $it['title'], product_price($it)]);
+                  [$orderId, $it['id'], $it['title'], $lp[(int)$it['id']]]);
             }
             if ($t['coupon']) {
                 q('UPDATE coupons SET used_count = used_count + 1 WHERE id = ?', [$t['coupon']['id']]);
@@ -98,7 +99,7 @@ if (is_post()) {
                 send_download_email($orderId);
             });
         }
-        track_event('Purchase', 'purchase', track_items($items), (float)$t['total'],
+        track_event('Purchase', 'purchase', track_items($items, $lp), (float)$t['total'],
             ['event_id' => $orderNo, 'coupon' => $t['coupon']['code'] ?? null], true);
         flash('success', $isFree
             ? 'অর্ডার সম্পন্ন! এখনই ডাউনলোড করতে পারবেন।'
@@ -113,7 +114,7 @@ if (is_post()) {
 }
 
 if (!is_post()) {
-    track_event('InitiateCheckout', 'begin_checkout', track_items($items), (float)$t['total']);
+    track_event('InitiateCheckout', 'begin_checkout', track_items($items, $lp), (float)$t['total']);
 }
 
 $title = 'চেকআউট';
@@ -175,7 +176,7 @@ require APP_DIR . '/views/header.php';
       <div class="sum-row sum-item">
         <img src="<?= e(product_image($it, 'thumb')) ?>" alt="" width="44" height="44">
         <span><?= e($it['title']) ?></span>
-        <span class="num"><?= money(product_price($it)) ?>
+        <span class="num"><?php if ($lp[(int)$it['id']] < product_price($it)): ?><s class="muted small"><?= money(product_price($it)) ?></s> <span class="addon-tag">অফার</span> <?php endif; ?><?= money($lp[(int)$it['id']]) ?>
           <?php if (count($items) > 1): ?>
           <form method="post" action="<?= url('cart.php') ?>" class="inline"><?= csrf_field() ?>
             <input type="hidden" name="action" value="remove"><input type="hidden" name="id" value="<?= (int)$it['id'] ?>"><input type="hidden" name="go" value="checkout">

@@ -9,7 +9,8 @@ if (is_post()) {
         $added = row('SELECT * FROM products WHERE id = ? AND is_active = 1', [$id]);
         if ($added) {
             if (!in_array($id, cart_ids(), true)) {
-                track_event('AddToCart', 'add_to_cart', track_items([$added]), product_price($added), [], true);
+                $addVal = addon_price_for($added) ?? product_price($added);
+                track_event('AddToCart', 'add_to_cart', [['id' => (int)$added['id'], 'title' => $added['title'], 'price' => $addVal]], $addVal, [], true);
             }
             cart_add($id);
             if (input('go') !== 'checkout' || input('upsell')) {
@@ -36,6 +37,7 @@ if (is_post()) {
 
 $items = cart_items();
 $t = cart_totals($items);
+$lp = cart_line_prices($items);
 $title = 'কার্ট';
 require APP_DIR . '/views/header.php';
 ?>
@@ -53,7 +55,7 @@ require APP_DIR . '/views/header.php';
       <tr>
         <td class="w-thumb"><img src="<?= e(product_image($it, 'thumb')) ?>" alt=""></td>
         <td><a href="<?= product_url($it) ?>"><?= e($it['title']) ?></a></td>
-        <td class="num"><?= money(product_price($it)) ?></td>
+        <td class="num"><?php if ($lp[(int)$it['id']] < product_price($it)): ?><s class="muted small"><?= money(product_price($it)) ?></s><br><span class="addon-tag">অফার</span> <?php endif; ?><?= money($lp[(int)$it['id']]) ?></td>
         <td class="num">
           <form method="post"><?= csrf_field() ?>
             <input type="hidden" name="action" value="remove">
@@ -65,6 +67,9 @@ require APP_DIR . '/views/header.php';
       <?php endforeach; ?>
     </table>
   </div>
+  <?php if (addon_enabled() && count($items) >= 1): ?>
+  <div class="addon-banner">🎁 <b>বিশেষ অফার:</b> কার্টে একটি পণ্য পুরো দামে থাকলে বাকি প্রতিটি গাইড মাত্র <b><?= money(addon_price()) ?></b>! নিচে থেকে যোগ করুন।</div>
+  <?php endif; ?>
   <?php $returnTo = 'cart'; require APP_DIR . '/views/upsell.php'; ?>
   </div>
   <aside class="card summary">

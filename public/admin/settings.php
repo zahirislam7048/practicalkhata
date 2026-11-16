@@ -7,6 +7,9 @@ $fields = [
     'flash_sale_end' => ['ফ্ল্যাশ সেল শেষ হওয়ার সময় (দিলে হোম পেজে কাউন্টডাউন দেখাবে)', 'datetime'],
     'reviews_auto_approve' => ['নতুন রিভিউ অনুমোদন ছাড়াই সাথে সাথে প্রকাশ করুন', 'checkbox'],
     'offline_customers' => ['ওয়েবসাইটের আগে মোট কতজন কিনেছেন (আসল সংখ্যা, যেমন 50) — হোম পেজে "সন্তুষ্ট ক্রেতা" হিসেবে যোগ হবে', 'text'],
+    'addon_enabled' => ['অ্যাড-অন অফার: একটি পণ্য কার্টে থাকলে বাকিগুলো কম দামে', 'checkbox'],
+    'addon_price'   => ['অ্যাড-অন দাম (৳) — বাকি প্রতিটি পণ্যের দাম', 'text'],
+    'addon_exclude' => ['অফারের বাইরে থাকবে (সবসময় পুরো দাম)', 'products'],
     'site_name'     => ['সাইটের নাম', 'text'],
     'tagline'       => ['ট্যাগলাইন', 'text'],
     'bkash_number'  => ['bKash নাম্বার (খালি রাখলে bKash বন্ধ)', 'text'],
@@ -39,8 +42,14 @@ if (is_post() && input('action') === 'test_email') {
 }
 if (is_post()) {
     csrf_check();
-    foreach (array_keys($fields) as $k) {
-        q('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)', [$k, input($k)]);
+    foreach ($fields as $k => [, $type]) {
+        $v = $type === 'products'
+            ? implode(',', array_filter(array_map('intval', (array)($_POST[$k] ?? []))))
+            : input($k);
+        if ($k === 'addon_price' && ($v === '' || !is_numeric($v) || (float)$v < 0)) {
+            $v = '30';
+        }
+        q('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)', [$k, $v]);
     }
     flash('success', 'সেটিংস সেভ হয়েছে।');
     redirect('admin/settings.php');
@@ -57,6 +66,13 @@ require APP_DIR . '/views/admin_header.php';
           <?php foreach (theme_presets() as $tk => $tp): ?>
             <label class="theme-opt"><input type="radio" name="theme" value="<?= $tk ?>" <?= setting('theme', 'green') === $tk ? 'checked' : '' ?>>
               <span class="sw" style="background:<?= $tp[1] ?>"></span><span class="sw" style="background:<?= $tp[5] ?>"></span> <?= e($tp[0]) ?></label>
+          <?php endforeach; ?>
+        </div>
+      <?php elseif ($type === 'products'): $sel = array_map('intval', explode(',', setting($k))); ?>
+        <input type="hidden" name="<?= $k ?>[]" value="0">
+        <div class="product-checks">
+          <?php foreach (rows('SELECT id, title, is_active FROM products ORDER BY title') as $pp): ?>
+            <label class="check"><input type="checkbox" name="<?= $k ?>[]" value="<?= (int)$pp['id'] ?>" <?= in_array((int)$pp['id'], $sel, true) ? 'checked' : '' ?>> <?= e($pp['title']) ?><?= $pp['is_active'] ? '' : ' <span class="muted small">(লুকানো)</span>' ?></label>
           <?php endforeach; ?>
         </div>
       <?php elseif ($type === 'checkbox'): ?>

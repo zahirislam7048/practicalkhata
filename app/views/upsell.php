@@ -6,19 +6,23 @@ if (!$ups) return;
 <section class="upsell card">
   <h3>🛍️ এগুলোও নিতে পারেন</h3>
   <div class="upsell-list">
-    <?php foreach ($ups as $up): $upPrice = product_price($up); $upOff = discount_percent($up); ?>
+    <?php foreach ($ups as $up): $upPrice = product_price($up); $upOff = discount_percent($up); $upAddon = addon_price_for($up); ?>
     <div class="upsell-item">
       <a href="<?= product_url($up) ?>" class="ui-img"><img src="<?= e(product_image($up, 'thumb')) ?>" alt="" loading="lazy" width="80" height="80"></a>
       <div class="ui-info">
         <a href="<?= product_url($up) ?>" class="ui-title"><?= e($up['title']) ?></a>
+        <?php if ($upAddon !== null): ?>
+          <div class="ui-price"><b>মাত্র <?= money($upAddon) ?></b> <s><?= money($upPrice) ?></s> <span class="addon-tag">অফার</span></div>
+        <?php else: ?>
         <div class="ui-price"><b><?= $upPrice > 0 ? money($upPrice) : 'ফ্রি' ?></b><?php if ($upOff): ?> <s><?= money($up['price']) ?></s> <span class="ui-off">-<?= bn($upOff) ?>%</span><?php endif; ?></div>
+        <?php endif; ?>
       </div>
       <form method="post" action="<?= url('cart.php') ?>" class="ui-add">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="add">
         <input type="hidden" name="id" value="<?= (int)$up['id'] ?>">
         <input type="hidden" name="go" value="<?= $returnTo === 'checkout' ? 'checkout' : 'cart' ?>">
-        <button class="btn btn-sm btn-accent" name="upsell" value="1">+ যোগ করুন</button>
+        <button class="btn btn-sm btn-accent" name="upsell" value="1">+ <?= $upAddon !== null ? money($upAddon) . '-এ ' : '' ?>যোগ করুন</button>
       </form>
     </div>
     <?php endforeach; ?>

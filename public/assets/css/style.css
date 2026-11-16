@@ -734,3 +734,8 @@ body.shop { background: var(--bg); }
 @media (max-width: 860px) { .social-proof { grid-template-columns: repeat(2, 1fr); } .social-proof b { font-size: 1.3rem; } }
 .slug-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .slug-row span { white-space: nowrap; font-size: .85rem; }
+/* add-on offer */
+.addon-tag { display: inline-block; background: var(--accent); color: var(--on-accent); font-size: .7rem; font-weight: 700; padding: 0 6px; border-radius: 4px; vertical-align: middle; }
+.addon-banner { background: var(--accent-soft); border: 1px dashed var(--accent-dark); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.addon-note { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; margin-top: 12px; font-size: .92rem; }
+.product-checks { display: grid; gap: 4px; margin-top: 6px; max-height: 220px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-weight: 400; }

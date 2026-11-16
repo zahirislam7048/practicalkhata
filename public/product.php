@@ -86,6 +86,11 @@ require APP_DIR . '/views/header.php';
         </div>
       <?php endif; ?>
 
+      <?php if (addon_enabled() && !addon_excluded_product($prod) && $price > addon_price()): $pAddon = addon_price_for($prod); ?>
+        <div class="addon-note">🎁 <?= $pAddon !== null
+            ? 'আপনার কার্টে পণ্য আছে — এটি এখন যোগ করলে মাত্র <b>' . money($pAddon) . '</b>!'
+            : 'যেকোনো একটি গাইড পুরো দামে কিনলে বাকিগুলো প্রতিটি মাত্র <b>' . money(addon_price()) . '</b>' ?></div>
+      <?php endif; ?>
       <div class="pay-badges"><span>পেমেন্ট:</span><span class="pb-bkash">bKash</span><span class="pb-nagad">Nagad</span></div>
     </div>
 

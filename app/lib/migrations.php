@@ -286,6 +286,13 @@ function run_migrations(): void
                 ]);
             }
         },
+        16 => function () {
+            // Add-on offer: other items ৳30 when one is in the cart, except ৩০ দিনের Instagram রূপকথা
+            $rup = (int)val('SELECT id FROM products WHERE title = ?', ['৩০ দিনের Instagram রূপকথা']);
+            foreach (['addon_enabled' => '1', 'addon_price' => '30', 'addon_exclude' => $rup ? (string)$rup : ''] as $k => $v) {
+                q('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = `value`', [$k, $v]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {
