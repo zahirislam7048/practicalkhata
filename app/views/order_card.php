@@ -1,4 +1,7 @@
-<?php /** @var array $o @var array $items @var ?string $token */ ?>
+<?php /** @var array $o @var array $items @var ?string $token */
+$itemReviews = $o['status'] === 'paid' ? reviews_for_items(array_column($items, 'id')) : [];
+$rvName = (string)(current_user()['name'] ?? ($o['guest_name'] ?? ''));
+?>
 <div class="card order-card">
   <div class="order-head">
     <div>
@@ -28,6 +31,17 @@
         <?php endif; ?>
       </td>
     </tr>
+    <?php if ($o['status'] === 'paid' && $it['product_id']): $myRv = $itemReviews[(int)$it['id']] ?? null; ?>
+    <tr class="review-row"><td colspan="3">
+      <?php if ($myRv): ?>
+        <span class="small">আপনার রিভিউ: <?= stars_html((float)$myRv['rating'], 13) ?> <span class="muted">(<?= e(review_status_label($myRv['status'])) ?>)</span></span>
+      <?php else: ?>
+        <details class="review-box"><summary>⭐ এই পণ্যের রিভিউ দিন</summary>
+          <?php $rvItemId = (int)$it['id']; $rvToken = $token ?? null; $rvReturn = $_SERVER['REQUEST_URI'] ?? url(); require APP_DIR . '/views/review_form.php'; ?>
+        </details>
+      <?php endif; ?>
+    </td></tr>
+    <?php endif; ?>
     <?php endforeach; ?>
   </table>
   <div class="order-foot muted small">

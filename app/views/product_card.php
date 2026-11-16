@@ -12,6 +12,9 @@ $cLink = url('product.php?slug=' . urlencode($prod['slug']));
   </a>
   <div class="pcard-body">
     <h3 class="pcard-title"><a href="<?= $cLink ?>"><?= e($prod['title']) ?></a></h3>
+    <?php if (!empty($prod['rating_count'])): ?>
+      <div class="pcard-rating"><?= stars_html((float)$prod['rating_avg'], 13) ?> <span>(<?= bn((int)$prod['rating_count']) ?>)</span></div>
+    <?php endif; ?>
     <div class="pcard-price">
       <span class="now"><?= $cPrice > 0 ? money($cPrice) : 'ফ্রি' ?></span>
       <?php if ($cOff): ?><s><?= money($prod['price']) ?></s><?php endif; ?>

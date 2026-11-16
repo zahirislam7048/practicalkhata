@@ -2,12 +2,14 @@
 $admin = require_admin();
 $current = basename($_SERVER['SCRIPT_NAME']);
 $pendingCount = (int)val("SELECT COUNT(*) FROM orders WHERE status = 'pending'");
+$pendingReviews = (int)val("SELECT COUNT(*) FROM reviews WHERE status = 'pending'");
 $menu = [
     'index.php'     => 'ড্যাশবোর্ড',
     'orders.php'    => 'অর্ডার',
     'products.php'  => 'পণ্য',
     'categories.php' => 'ক্যাটাগরি',
     'banners.php'   => 'ব্যানার',
+    'reviews.php'   => 'রিভিউ',
     'coupons.php'   => 'কুপন',
     'customers.php' => 'কাস্টমার',
     'settings.php'  => 'সেটিংস',
@@ -21,7 +23,7 @@ $active = ['order.php' => 'orders.php', 'product-edit.php' => 'products.php', 'c
 <meta name="robots" content="noindex">
 <title><?= e(($title ?? 'অ্যাডমিন') . ' | ' . setting('site_name', 'Practical Khata')) ?></title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=13">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=15">
 </head>
 <body class="admin">
 <aside class="admin-side">
@@ -31,6 +33,7 @@ $active = ['order.php' => 'orders.php', 'product-edit.php' => 'products.php', 'c
       <a href="<?= url('admin/' . $file) ?>" class="<?= $active === $file ? 'active' : '' ?>">
         <?= e($label) ?>
         <?php if ($file === 'orders.php' && $pendingCount): ?><span class="badge badge-warn"><?= $pendingCount ?></span><?php endif; ?>
+        <?php if ($file === 'reviews.php' && $pendingReviews): ?><span class="badge badge-warn"><?= $pendingReviews ?></span><?php endif; ?>
       </a>
     <?php endforeach; ?>
     <hr>

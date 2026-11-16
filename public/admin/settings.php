@@ -5,6 +5,7 @@ require_admin();
 $fields = [
     'theme'         => ['সাইটের রঙ', 'theme'],
     'flash_sale_end' => ['ফ্ল্যাশ সেল শেষ হওয়ার সময় (দিলে হোম পেজে কাউন্টডাউন দেখাবে)', 'datetime'],
+    'reviews_auto_approve' => ['নতুন রিভিউ অনুমোদন ছাড়াই সাথে সাথে প্রকাশ করুন', 'checkbox'],
     'site_name'     => ['সাইটের নাম', 'text'],
     'tagline'       => ['ট্যাগলাইন', 'text'],
     'bkash_number'  => ['bKash নাম্বার (খালি রাখলে bKash বন্ধ)', 'text'],

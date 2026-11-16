@@ -224,7 +224,9 @@ function tracking_customer(): array
 function shop_products(string $where = '1=1', array $params = [], string $order = 'p.created_at DESC', int $limit = 12, int $offset = 0): array
 {
     return rows("SELECT p.*, (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
-                 WHERE oi.product_id = p.id AND o.status = 'paid') AS sold
+                 WHERE oi.product_id = p.id AND o.status = 'paid') AS sold,
+                 (SELECT AVG(rating) FROM reviews rv WHERE rv.product_id = p.id AND rv.status = 'approved') AS rating_avg,
+                 (SELECT COUNT(*) FROM reviews rv WHERE rv.product_id = p.id AND rv.status = 'approved') AS rating_count
                  FROM products p WHERE p.is_active = 1 AND ($where) ORDER BY $order LIMIT $limit OFFSET $offset", $params);
 }
 

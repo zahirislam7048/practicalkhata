@@ -1,0 +1,69 @@
+<?php
+require dirname(__DIR__) . '/_init.php';
+require_admin();
+
+if (is_post()) {
+    csrf_check();
+    $id = (int)input('id');
+    $action = input('action');
+    if (in_array($action, ['approved', 'hidden', 'pending'], true)) {
+        q('UPDATE reviews SET status = ? WHERE id = ?', [$action, $id]);
+        flash('success', 'রিভিউ: ' . review_status_label($action));
+    } elseif ($action === 'reply') {
+        q('UPDATE reviews SET admin_reply = ? WHERE id = ?', [input('reply') ?: null, $id]);
+        flash('success', 'উত্তর সেভ হয়েছে।');
+    } elseif ($action === 'delete') {
+        q('DELETE FROM reviews WHERE id = ?', [$id]);
+        flash('success', 'রিভিউ মুছে ফেলা হয়েছে।');
+    }
+    redirect('admin/reviews.php?' . http_build_query(array_intersect_key($_GET, ['status' => 1])));
+}
+
+$title = 'রিভিউ';
+require APP_DIR . '/views/admin_header.php';
+$status = (string)($_GET['status'] ?? 'pending');
+if (!in_array($status, ['pending', 'approved', 'hidden', 'all'], true)) {
+    $status = 'pending';
+}
+$where = $status === 'all' ? '1=1' : 'r.status = ?';
+$reviews = rows("SELECT r.*, p.title, p.slug, o.order_no, o.access_token FROM reviews r
+                 JOIN products p ON p.id = r.product_id
+                 LEFT JOIN order_items oi ON oi.id = r.order_item_id LEFT JOIN orders o ON o.id = oi.order_id
+                 WHERE $where ORDER BY r.created_at DESC LIMIT 200", $status === 'all' ? [] : [$status]);
+$counts = array_column(rows('SELECT status, COUNT(*) n FROM reviews GROUP BY status'), 'n', 'status');
+?>
+<div class="toolbar">
+  <div class="tabs">
+    <?php foreach (['pending' => 'অপেক্ষমাণ', 'approved' => 'প্রকাশিত', 'hidden' => 'লুকানো', 'all' => 'সব'] as $k => $label): ?>
+      <a class="<?= $status === $k ? 'active' : '' ?>" href="?status=<?= $k ?>"><?= $label ?><?= isset($counts[$k]) ? ' (' . (int)$counts[$k] . ')' : '' ?></a>
+    <?php endforeach; ?>
+  </div>
+  <span class="muted small">শুধু ভেরিফায়েড ক্রেতারা রিভিউ দিতে পারেন। <?= setting('reviews_auto_approve') === '1' ? 'নতুন রিভিউ নিজে থেকে প্রকাশ হচ্ছে।' : 'নতুন রিভিউ আপনার অনুমোদনের পর প্রকাশ হবে।' ?></span>
+</div>
+<?php if (!$reviews): ?><div class="card muted">এখানে কোনো রিভিউ নেই।</div><?php endif; ?>
+<?php foreach ($reviews as $r): ?>
+<div class="card admin-review">
+  <div class="ar-head">
+    <div>
+      <?= stars_html((float)$r['rating'], 16) ?> <b><?= e($r['name']) ?></b>
+      <span class="muted small">· <?= e(date('d M Y, h:i A', strtotime($r['created_at']))) ?></span>
+      <div class="small"><a href="<?= url('product.php?slug=' . urlencode($r['slug'])) ?>#reviews" target="_blank"><?= e($r['title']) ?></a>
+        <?php if ($r['order_no']): ?> · অর্ডার <a href="orders.php?s=<?= urlencode($r['order_no']) ?>">#<?= e($r['order_no']) ?></a><?php endif; ?></div>
+    </div>
+    <span class="status <?= $r['status'] === 'approved' ? 'status-paid' : ($r['status'] === 'pending' ? 'status-pending' : 'status-rejected') ?>"><?= e(review_status_label($r['status'])) ?></span>
+  </div>
+  <p><?= nl2br(e($r['comment'])) ?></p>
+  <form method="post" class="ar-actions">
+    <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+    <?php if ($r['status'] !== 'approved'): ?><button class="btn btn-sm btn-approve" name="action" value="approved">✔ প্রকাশ করুন</button><?php endif; ?>
+    <?php if ($r['status'] !== 'hidden'): ?><button class="btn btn-sm btn-outline" name="action" value="hidden">লুকান</button><?php endif; ?>
+    <button class="link-btn danger" name="action" value="delete" data-confirm="রিভিউটি মুছে ফেলবেন?">মুছুন</button>
+  </form>
+  <form method="post" class="ar-reply">
+    <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$r['id'] ?>"><input type="hidden" name="action" value="reply">
+    <input name="reply" value="<?= e((string)$r['admin_reply']) ?>" placeholder="কাস্টমারকে উত্তর দিন (সাইটে রিভিউয়ের নিচে দেখাবে)">
+    <button class="btn btn-sm">উত্তর সেভ</button>
+  </form>
+</div>
+<?php endforeach; ?>
+<?php require APP_DIR . '/views/admin_footer.php';

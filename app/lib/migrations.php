@@ -151,6 +151,23 @@ function run_migrations(): void
                 ]);
             }
         },
+        9 => function () {
+            // Product reviews from verified buyers
+            db()->exec("CREATE TABLE IF NOT EXISTS reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id INT UNSIGNED NOT NULL,
+  order_item_id INT UNSIGNED NULL UNIQUE,
+  user_id INT UNSIGNED NULL,
+  name VARCHAR(60) NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  comment TEXT NOT NULL,
+  status ENUM('pending','approved','hidden') NOT NULL DEFAULT 'pending',
+  admin_reply TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_product (product_id, status),
+  CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {

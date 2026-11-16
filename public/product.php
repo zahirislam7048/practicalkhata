@@ -17,6 +17,9 @@ $owned = current_user() && in_array((int)$prod['id'], owned_product_ids((int)cur
 $sold = (int)val("SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.product_id = ? AND o.status = 'paid'", [$prod['id']]);
 $ext = $prod['file_name'] ? strtoupper(pathinfo($prod['file_name'], PATHINFO_EXTENSION)) : 'ডিজিটাল';
 $related = shop_products('p.id <> ?', [$prod['id']], 'RAND()', 4);
+$rv = review_summary((int)$prod['id']);
+$reviews = rows("SELECT * FROM reviews WHERE product_id = ? AND status = 'approved' ORDER BY created_at DESC LIMIT 30", [$prod['id']]);
+$myReviewItem = reviewable_item_for_user((int)$prod['id']);
 
 track_event('ViewContent', 'view_item', track_items([$prod]), $price);
 
@@ -37,7 +40,10 @@ require APP_DIR . '/views/header.php';
   <div class="pd-info">
     <span class="pd-type"><?= icon('file', 14) ?> <?= e($ext) ?> ফাইল • ডিজিটাল পণ্য</span>
     <h1><?= e($prod['title']) ?></h1>
-    <?php if ($sold > 0): ?><div class="pd-sold"><?= icon('check', 16) ?> <?= bn($sold) ?> জন কিনেছেন</div><?php endif; ?>
+    <div class="pd-meta-row">
+      <?php if ($rv['count']): ?><a href="#reviews" class="pd-rating"><?= stars_html($rv['avg'], 17) ?> <b><?= bn(number_format($rv['avg'], 1)) ?></b> <span>(<?= bn($rv['count']) ?>টি রিভিউ)</span></a><?php endif; ?>
+      <?php if ($sold > 0): ?><span class="pd-sold"><?= icon('check', 16) ?> <?= bn($sold) ?> জন কিনেছেন</span><?php endif; ?>
+    </div>
     <?php if ($prod['short_desc']): ?><p class="lead"><?= e($prod['short_desc']) ?></p><?php endif; ?>
 
     <div class="pd-pricebox">
@@ -101,6 +107,59 @@ require APP_DIR . '/views/header.php';
     <details><summary>ভুল Transaction ID দিলে কী হবে?</summary><p>যাচাই করতে না পারলে আমরা যোগাযোগ করব। সঠিক তথ্য দিয়ে আবার অর্ডার করতে পারবেন।</p></details>
   </section>
 </div>
+
+<section class="card reviews" id="reviews">
+  <h2>কাস্টমার রিভিউ</h2>
+  <?php if ($rv['count']): ?>
+  <div class="rv-summary">
+    <div class="rv-avg"><b><?= bn(number_format($rv['avg'], 1)) ?></b><?= stars_html($rv['avg'], 20) ?><span class="muted small"><?= bn($rv['count']) ?>টি রিভিউ</span></div>
+    <div class="rv-bars">
+      <?php foreach ($rv['dist'] as $star => $n): $pct = $rv['count'] ? round($n / $rv['count'] * 100) : 0; ?>
+        <div class="rv-bar"><span><?= bn($star) ?> ★</span><i><b style="width:<?= $pct ?>%"></b></i><span class="muted"><?= bn($n) ?></span></div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+  <?php else: ?>
+    <p class="muted">এখনো কোনো রিভিউ নেই। পণ্যটি কিনে প্রথম রিভিউ দিন!</p>
+  <?php endif; ?>
+
+  <?php if ($myReviewItem): ?>
+    <div class="rv-write"><h3>⭐ আপনার রিভিউ দিন</h3>
+      <?php $rvItemId = (int)$myReviewItem['id']; $rvToken = null; $rvReturn = url('product.php?slug=' . urlencode($prod['slug'])) . '#reviews'; $rvName = (string)current_user()['name']; require APP_DIR . '/views/review_form.php'; ?>
+    </div>
+  <?php elseif (!current_user() || !$owned): ?>
+    <p class="muted small">শুধু যারা পণ্যটি কিনেছেন তারাই রিভিউ দিতে পারেন — অর্ডারের পেজ বা ইমেইলের লিংক থেকে রিভিউ দেওয়া যায়।</p>
+  <?php endif; ?>
+
+  <?php foreach ($reviews as $r): ?>
+    <div class="rv-item">
+      <div class="rv-head"><span class="rv-avatar"><?= e(mb_substr($r['name'], 0, 1)) ?></span>
+        <div><b><?= e($r['name']) ?></b> <span class="rv-verified">✓ ভেরিফায়েড ক্রেতা</span>
+        <div><?= stars_html((float)$r['rating'], 14) ?> <span class="muted small"><?= e(date('d M Y', strtotime($r['created_at']))) ?></span></div></div>
+      </div>
+      <p><?= nl2br(e($r['comment'])) ?></p>
+      <?php if ($r['admin_reply']): ?><div class="rv-reply"><b><?= e(setting('site_name', 'Practical Khata')) ?>:</b> <?= nl2br(e($r['admin_reply'])) ?></div><?php endif; ?>
+    </div>
+  <?php endforeach; ?>
+</section>
+
+<?php
+// Structured data for Google (real reviews only)
+$ld = [
+    '@context' => 'https://schema.org', '@type' => 'Product', 'name' => $prod['title'],
+    'image' => $ogImage, 'description' => $metaDesc, 'sku' => 'PK-' . $prod['id'],
+    'brand' => ['@type' => 'Brand', 'name' => setting('site_name', 'Practical Khata')],
+    'offers' => ['@type' => 'Offer', 'priceCurrency' => 'BDT', 'price' => number_format($price, 2, '.', ''),
+                 'availability' => 'https://schema.org/InStock', 'url' => (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '') . url('product.php?slug=' . urlencode($prod['slug']))],
+];
+if ($rv['count']) {
+    $ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => $rv['avg'], 'reviewCount' => $rv['count']];
+    $ld['review'] = array_map(fn($r) => ['@type' => 'Review', 'author' => ['@type' => 'Person', 'name' => $r['name']],
+        'reviewRating' => ['@type' => 'Rating', 'ratingValue' => (int)$r['rating']], 'reviewBody' => $r['comment'],
+        'datePublished' => date('Y-m-d', strtotime($r['created_at']))], array_slice($reviews, 0, 5));
+}
+?>
+<script type="application/ld+json"><?= json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
 
 <?php if ($related): ?>
 <section class="shelf">

@@ -178,6 +178,7 @@ function send_download_email(int $orderId): ?string
         . '<tr><td style="padding:8px 0"><b>মোট</b></td><td style="padding:8px 0;text-align:right"><b>' . money($o['total']) . '</b></td></tr></table>'
         . '<p style="text-align:center;margin:24px 0"><a href="' . e($link) . '" style="background:#facc15;color:#052e16;text-decoration:none;font-weight:bold;padding:14px 28px;border-radius:10px;display:inline-block">⬇ ডাউনলোড করুন</a></p>'
         . '<p style="font-size:13px;color:#64748b">বাটন কাজ না করলে এই লিংকটি ব্রাউজারে খুলুন:<br><a href="' . e($link) . '" style="color:#15803d;word-break:break-all">' . e($link) . '</a></p>'
+        . '<p style="font-size:13px;color:#64748b">⭐ পণ্যটি ব্যবহারের পর একই লিংক থেকে রিভিউ দিতে পারবেন — আপনার মতামত অন্যদের সাহায্য করবে।</p>'
         . '<p style="font-size:13px;color:#64748b">এই লিংকটি শুধু আপনার জন্য — কারো সাথে শেয়ার করবেন না। নির্দিষ্ট সংখ্যক বার ডাউনলোড করা যাবে।</p>'
         . (setting('contact_phone') ? '<p style="font-size:13px;color:#64748b">যেকোনো সমস্যায়: ' . e(setting('contact_phone')) . '</p>' : '')
         . '</div><p style="text-align:center;font-size:12px;color:#94a3b8">© ' . date('Y') . ' ' . e($site) . '</p></div></body></html>';
