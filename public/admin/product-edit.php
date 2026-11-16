@@ -18,6 +18,7 @@ if (is_post()) {
         'price'          => input('price'),
         'sale_price'     => input('sale_price'),
         'download_limit' => input('download_limit', '5'),
+        'prior_sales'    => (string)max(0, (int)input('prior_sales', '0')),
         'is_active'      => isset($_POST['is_active']) ? 1 : 0,
         'category_id'    => (int)input('category_id') ?: null,
     ];
@@ -54,12 +55,12 @@ if (is_post()) {
             $image, $file['path'], $file['name'], (int)$data['download_limit'], $data['is_active'], $data['category_id'],
         ];
         if ($p) {
-            q('UPDATE products SET title=?, short_desc=?, description=?, price=?, sale_price=?, image=?, file_path=?, file_name=?, download_limit=?, is_active=?, category_id=? WHERE id=?',
-              [...$params, $p['id']]);
+            q('UPDATE products SET title=?, short_desc=?, description=?, price=?, sale_price=?, image=?, file_path=?, file_name=?, download_limit=?, is_active=?, category_id=?, prior_sales=? WHERE id=?',
+              [...$params, (int)$data['prior_sales'], $p['id']]);
             flash('success', 'পণ্য আপডেট হয়েছে।');
         } else {
-            q('INSERT INTO products (title, short_desc, description, price, sale_price, image, file_path, file_name, download_limit, is_active, category_id, slug) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-              [...$params, unique_slug($data['title'])]);
+            q('INSERT INTO products (title, short_desc, description, price, sale_price, image, file_path, file_name, download_limit, is_active, category_id, prior_sales, slug) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+              [...$params, (int)$data['prior_sales'], unique_slug($data['title'])]);
             flash('success', 'নতুন পণ্য যোগ হয়েছে।');
         }
         redirect('admin/products.php');
@@ -90,6 +91,10 @@ $maxUpload = ini_get('upload_max_filesize');
     <label>দাম (৳) *<input name="price" type="number" step="0.01" min="0" value="<?= e($p['price'] ?? '') ?>" required></label>
     <label>অফার দাম (৳)<input name="sale_price" type="number" step="0.01" min="0" value="<?= e($p['sale_price'] ?? '') ?>"></label>
     <label>ডাউনলোড সীমা<input name="download_limit" type="number" min="1" value="<?= e($p['download_limit'] ?? '5') ?>"></label>
+  </div>
+  <div class="row3">
+    <label>আগের বিক্রি <small class="muted">(ওয়েবসাইটের বাইরে — Facebook/WhatsApp এ — আসলে যতগুলো বিক্রি হয়েছে)</small>
+      <input name="prior_sales" type="number" min="0" value="<?= e((string)($p['prior_sales'] ?? '0')) ?>"></label>
   </div>
   <div class="row2">
     <label>কভার ছবি <small class="muted">(JPG/PNG/WEBP, ১৫MB পর্যন্ত — নিজে থেকে ছোট হয়ে যাবে)</small>

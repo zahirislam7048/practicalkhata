@@ -104,6 +104,15 @@ require APP_DIR . '/views/header.php';
 </section>
 <?php endif; ?>
 
+<?php $customers = total_customers(); if ($customers >= 10): ?>
+<section class="social-proof">
+  <div><b><?= bn(floor($customers / 10) * 10) ?>+</b><span>সন্তুষ্ট ক্রেতা</span></div>
+  <?php $nProducts = (int)val('SELECT COUNT(*) FROM products WHERE is_active = 1'); if ($nProducts): ?><div><b><?= bn($nProducts) ?>টি</b><span>প্র্যাকটিক্যাল গাইড</span></div><?php endif; ?>
+  <?php $rvAll = row("SELECT AVG(rating) a, COUNT(*) n FROM reviews WHERE status = 'approved'"); if ((int)$rvAll['n'] >= 3): ?><div><b><?= bn(number_format((float)$rvAll['a'], 1)) ?> ★</b><span>গড় রেটিং (<?= bn((int)$rvAll['n']) ?>টি রিভিউ)</span></div><?php endif; ?>
+  <div><b>bKash / Nagad</b><span>সহজ পেমেন্ট</span></div>
+</section>
+<?php endif; ?>
+
 <?php if ($deals): ?>
 <section class="block flash">
   <div class="block-head">

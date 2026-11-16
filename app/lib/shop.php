@@ -223,7 +223,7 @@ function tracking_customer(): array
 /** Active products with how many paid copies were sold. */
 function shop_products(string $where = '1=1', array $params = [], string $order = 'p.created_at DESC', int $limit = 12, int $offset = 0): array
 {
-    return rows("SELECT p.*, (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
+    return rows("SELECT p.*, p.prior_sales + (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id
                  WHERE oi.product_id = p.id AND o.status = 'paid') AS sold,
                  (SELECT AVG(rating) FROM reviews rv WHERE rv.product_id = p.id AND rv.status = 'approved') AS rating_avg,
                  (SELECT COUNT(*) FROM reviews rv WHERE rv.product_id = p.id AND rv.status = 'approved') AS rating_count
@@ -323,4 +323,11 @@ function upsell_products(int $limit = 4): array
     $skip = array_values(array_unique(array_map('intval', $skip))) ?: [0];
     $in = implode(',', array_fill(0, count($skip), '?'));
     return shop_products("p.id NOT IN ($in)", $skip, '(p.sale_price IS NOT NULL AND p.sale_price < p.price) DESC, sold DESC, p.created_at DESC', $limit);
+}
+
+/** Total happy customers to show on the home page: sales before the website + paid website orders. */
+function total_customers(): int
+{
+    $online = (int)val("SELECT COUNT(DISTINCT COALESCE(CONCAT('u', user_id), guest_phone, id)) FROM orders WHERE status = 'paid'");
+    return (int)setting('offline_customers', '0') + $online;
 }

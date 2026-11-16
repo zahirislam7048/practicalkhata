@@ -727,3 +727,8 @@ body.shop { background: var(--bg); }
 .rv-collected { color: var(--muted) !important; }
 .add-review summary { cursor: pointer; }
 @media (max-width: 860px) { .tm-track { grid-auto-columns: 85%; } }
+.social-proof { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: linear-gradient(135deg, var(--deep), var(--brand)); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; color: #fff; text-align: center; }
+.social-proof > div { display: flex; flex-direction: column; }
+.social-proof b { font-size: 1.6rem; color: var(--accent); line-height: 1.2; }
+.social-proof span { font-size: .88rem; color: #d1fae5; }
+@media (max-width: 860px) { .social-proof { grid-template-columns: repeat(2, 1fr); } .social-proof b { font-size: 1.3rem; } }

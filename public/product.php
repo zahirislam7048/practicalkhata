@@ -14,7 +14,7 @@ $price = product_price($prod);
 $off = discount_percent($prod);
 $inCart = in_array((int)$prod['id'], cart_ids(), true);
 $owned = current_user() && in_array((int)$prod['id'], owned_product_ids((int)current_user()['id']), true);
-$sold = (int)val("SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.product_id = ? AND o.status = 'paid'", [$prod['id']]);
+$sold = (int)$prod['prior_sales'] + (int)val("SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.product_id = ? AND o.status = 'paid'", [$prod['id']]);
 $ext = $prod['file_name'] ? strtoupper(pathinfo($prod['file_name'], PATHINFO_EXTENSION)) : 'ডিজিটাল';
 $related = shop_products('p.id <> ?', [$prod['id']], 'RAND()', 4);
 $rv = review_summary((int)$prod['id']);

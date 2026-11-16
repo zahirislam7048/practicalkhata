@@ -174,6 +174,12 @@ function run_migrations(): void
                 db()->exec("ALTER TABLE reviews ADD source VARCHAR(40) NULL AFTER admin_reply");
             }
         },
+        11 => function () {
+            // Sales made before the website (Facebook/WhatsApp), entered by the admin
+            if (!val("SHOW COLUMNS FROM products LIKE 'prior_sales'")) {
+                db()->exec("ALTER TABLE products ADD prior_sales INT UNSIGNED NOT NULL DEFAULT 0 AFTER download_limit");
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {
