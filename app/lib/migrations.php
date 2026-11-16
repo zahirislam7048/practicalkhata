@@ -214,6 +214,42 @@ function run_migrations(): void
                 ]);
             }
         },
+        14 => function () {
+            // CV & interview guide (draft until the admin uploads the PDF and switches it on)
+            $catName = 'ক্যারিয়ার ও চাকরি';
+            $catId = val('SELECT id FROM categories WHERE slug = ?', [slugify($catName)]);
+            if (!$catId) {
+                q('INSERT INTO categories (name, slug, icon, sort_order) VALUES (?,?,?,?)', [$catName, slugify($catName), '💼', 3]);
+                $catId = (int)db()->lastInsertId();
+            }
+            $title = 'সিভি থেকে চাকরি: ইন্টারভিউ জয়ের প্র্যাকটিক্যাল গাইড';
+            if (!val('SELECT id FROM products WHERE title = ?', [$title])) {
+                q('INSERT INTO products (title, slug, category_id, short_desc, description, price, sale_price, image, download_limit, is_active)
+                   VALUES (?,?,?,?,?,?,?,?,?,0)', [
+                    $title,
+                    unique_slug($title),
+                    $catId,
+                    'নজরকাড়া সিভি, কভার লেটার আর ইন্টারভিউর প্রশ্নের উত্তর দেওয়ার ধাপে ধাপে বাংলা গাইড — আগে-পরে উদাহরণ, রেডি টেমপ্লেট ও ওয়ার্কশিট সহ।',
+                    "শত শত আবেদনের ভিড়ে আপনার সিভি কি চোখে পড়ে? ইন্টারভিউতে \"Tell me about yourself\" শুনলেই কি আটকে যান? এই গাইড ফ্রেশার আর চাকরি বদলাতে চাওয়া — দুজনের জন্যই, বাংলাদেশের চাকরির বাজার মাথায় রেখে লেখা।\n\n"
+                    . "যা পাবেন (২৪ পৃষ্ঠা, PDF):\n"
+                    . "• নিয়োগকর্তা আসলে কী খোঁজেন, চাকরি কোথায় পাওয়া যায়, প্রতারণা চেনার উপায়\n"
+                    . "• ভালো সিভির কাঠামো, প্রতিটি অংশ লেখার নিয়ম ও Action verb-এর তালিকা\n"
+                    . "• আগে-পরে উদাহরণ: একটি দুর্বল সিভি কীভাবে শক্তিশালী হলো\n"
+                    . "• অভিজ্ঞতা না থাকলে ফ্রেশারের সিভি, আর সিভির ১৫টি সাধারণ ভুল\n"
+                    . "• কভার লেটার ও ধন্যবাদ ইমেইলের রেডি টেমপ্লেট\n"
+                    . "• LinkedIn ও জব পোর্টাল প্রোফাইল, আবেদনের সাপ্তাহিক রুটিন\n"
+                    . "• STAR পদ্ধতি এবং ১৭টি সবচেয়ে কমন ইন্টারভিউ প্রশ্নের উত্তরের কৌশল (ইংরেজি নমুনা সহ)\n"
+                    . "• সরকারি ও ব্যাংকের ভাইভা বোর্ডের প্রস্তুতি\n"
+                    . "• বেতন নিয়ে আলোচনা ও অফার লেটার যাচাই\n"
+                    . "• আবেদন ট্র্যাকার, STAR গল্পের খাতা ও ৩০ দিনের চাকরি-খোঁজার পরিকল্পনা\n\n"
+                    . "দ্রষ্টব্য: শিক্ষামূলক গাইড; চাকরির নিশ্চয়তা নয়।",
+                    199,
+                    149,
+                    'assets/img/cv-chakri-cover.jpg',
+                    5,
+                ]);
+            }
+        },
     ];
     foreach ($steps as $n => $step) {
         if ($n > $version) {
